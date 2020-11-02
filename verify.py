@@ -12,7 +12,8 @@ color_pending = discord.Colour.from_rgb(245, 166, 35)
 em_stage0 = discord.Embed()  # Welcome to CGH! Please enter your email!\
 em_stage0.title = "Welcome to the Crusader Gaming Hub!"
 em_stage0.description = "Before you can access the server, you'll need to verify yourself as a Holy Cross student.\n" \
-                        "Please enter your @g.holycross.edu email address below."
+                        "Please enter your @g.holycross.edu email address below. If you would like to request a " \
+                        "Guest Pass, simply say \"guest\"."
 em_stage0.colour = color_okay
 
 em_stage0_err = discord.Embed() # Invalid email! Try again!
@@ -39,6 +40,24 @@ em_stage2.title = "Success!"
 em_stage2.description = "Congratulations! You're now verified in the Crusader Gaming Hub, and you should have access " \
                         "to all channels. Have fun!"
 em_stage2.colour = color_success
+
+em_stage3 = discord.Embed()  # Guest Pass awaiting approval
+em_stage3.title = "Guest Pass Requested!"
+em_stage3.description = "I've notified the moderators that you are requesting a Guest Pass. You'll be notified if " \
+                        "your request is accepted or declined. Thank you!"
+em_stage3.colour = color_pending
+
+em_stage3_success = discord.Embed()  # Guest Pass approved!
+em_stage3_success.title = "Guest Pass Approved!"
+em_stage3_success.description = "Congratulations! You've been issued a Guest Pass, and you should now have access " \
+                                "to the Crusader Gaming Hub. Have fun!"
+em_stage3_success.colour = color_success
+
+em_stage3_failure = discord.Embed()  # Guest Pass declined!
+em_stage3_failure.title = "Guest Pass Declined!"
+em_stage3_failure.description = "Sorry, but the moderators have not approved your request for a Guest Pass. " \
+                                "Please try again another time, or check in with the person who invited you."
+em_stage3_failure.colour = color_err
 
 
 port = 465
@@ -93,6 +112,14 @@ def email_is_valid(supplied_email):
     return False
 
 
+async def guest_issue(member, approval):
+    if approval is True:
+        await member.dm_channel.send(embed=em_stage3_success)
+    else:
+        await member.dm_channel.send(embed=em_stage3_failure)
+    del active_sessions[member]
+
+
 async def new_dm_input(member, u_input):
     # Returns a Tuple (user stage, response info)
     if member not in active_sessions.keys():
@@ -100,7 +127,15 @@ async def new_dm_input(member, u_input):
     member_vs = active_sessions[member]
 
     if member_vs.stage == 0:
-        if email_is_valid(u_input):
+        # User should have entered their email address or "guest" keyword
+        u_input = u_input.lower()
+        if u_input.startswith("guest"):
+            active_sessions[member].stage = 3
+            await member.dm_channel.send(embed=em_stage3)
+            return 3, "guest"
+
+        elif email_is_valid(u_input):
+            active_sessions[member].code = random_code(8)
             active_sessions[member].email = u_input
             active_sessions[member].stage = 1
             send_code(u_input, active_sessions[member].code)
@@ -111,6 +146,7 @@ async def new_dm_input(member, u_input):
             await member.dm_channel.send(embed=em_stage0_err)
             return 0, "failure"
     elif member_vs.stage == 1:
+        # User should have entered their verification code or resend/restart
         if u_input.lower() == "resend":
             await member.dm_channel.send(embed=em_stage1)
             send_code(active_sessions[member].email, active_sessions[member].code)
@@ -126,7 +162,8 @@ async def new_dm_input(member, u_input):
         else:
             await member.dm_channel.send(embed=em_stage1_err)
             return 1, "failure"
-    else:
+    elif member_vs.stage != 3:
+        # If user sends a DM, but their session is already over, just remove their session
         del active_sessions[member]
 
 
@@ -145,9 +182,8 @@ def verify_listener():
             pass
         print("New user noticed!")
         member = new_user_queue.pop(0)
-        new_code = random_code(8)
         active_sessions[member] = VerifyState()
-        active_sessions[member].code = new_code
+
 
 
 verify_thread = threading.Thread(target=verify_listener)

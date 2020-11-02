@@ -10,6 +10,7 @@ class CGH:
         self.role_guest = guild.get_role(702380501188739163)
         self.channel_general = guild.get_channel(441445458897010717)
         self.channel_member_log = guild.get_channel(682342799940649014)
+        self.guest_requests = {}
 
     def count_members(self):
         count = 0
@@ -52,4 +53,50 @@ class CGH:
         username_change.add_field(name="Current", value=new_username, inline=True)
         username_change.description = "Make sure to update the verified user sheet immediately!"
         await self.channel_member_log.send(embed=username_change)
+
+    async def notify_of_guest(self, user):
+        guest_request = discord.Embed()
+        guest_request.title = "User Requesting Guest Pass!"
+        guest_request.set_thumbnail(url=user.avatar_url)
+        guest_request.description = "React with either a green or red square to approve/deny the request."
+        guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
+        guest_request.colour = discord.Colour.from_rgb(150, 150, 150)
+        sent_message = await self.channel_member_log.send(embed=guest_request)
+        await sent_message.add_reaction("\U0001f7e9")  # green square
+        await sent_message.add_reaction("\U0001f7e5")  # red square
+        self.guest_requests[sent_message] = user
+
+    async def verify_guest(self, message):
+        if message not in self.guest_requests.keys():
+            return
+        user = self.guest_requests[message]
+        member = self.guild.get_member(user_id=user.id)
+        if member is None:
+            return
+        if self.role_pending in member.roles:
+            await member.remove_roles(self.role_pending)
+        await member.add_roles(self.role_guest)
+
+    async def user_left(self, member):
+        valid = False
+
+        for role in member.roles:
+            if role in [self.role_crusader, self.role_eboard]:
+                valid = True
+                break
+
+        if valid is False:
+            return
+
+        departure_notice = discord.Embed()
+        departure_notice.title = "User Left Server"
+        departure_notice.add_field(name="Remaining Members", value="➤ %d" % self.count_members(), inline=False)
+        departure_notice.colour = discord.Colour.from_rgb(214, 40, 61)
+        departure_notice.set_author(name="%s#%s" % (member.name, member.discriminator), url=None,
+                                    icon_url=member.avatar_url)
+        await self.channel_member_log.send(embed=departure_notice)
+
+
+
+
 

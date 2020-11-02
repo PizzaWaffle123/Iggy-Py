@@ -22,11 +22,53 @@ async def on_member_join(member):
 
 
 @client.event
+async def on_member_leave(member):
+    global my_cgh
+    await my_cgh.user_left(member)
+
+
+@client.event
 async def on_user_update(before, after):
     before_name = "%s#%s" % (before.name, before.discriminator)
     after_name = "%s#%s" % (after.name, after.discriminator)
     if before_name != after_name:
         await my_cgh.username_update(before, after)
+
+
+@client.event
+async def on_reaction_add(reaction, user):
+    print("Heard a reaction added!")
+    if reaction.message not in my_cgh.guest_requests.keys():
+        return
+    if user == client.user:
+        return
+
+    if reaction.emoji == "\U0001f7e9":
+        # Was it a green square?
+        await my_cgh.verify_guest(reaction.message)
+        relevant_user = my_cgh.guest_requests[reaction.message]
+        await verify.guest_issue(relevant_user, True)
+        del my_cgh.guest_requests[reaction.message]
+        embed_to_edit = reaction.message.embeds[0]
+        embed_to_edit.title = "Guest Pass Approved!"
+        embed_to_edit.add_field(name="Approved By", value="%s#%s" % (user.name, user.discriminator), inline=False)
+        embed_to_edit.colour = discord.Colour.from_rgb(0, 255, 0)
+        await reaction.message.edit(embed=embed_to_edit)
+
+    elif reaction.emoji == "\U0001f7e5":
+        # How about a red square?
+        relevant_user = my_cgh.guest_requests[reaction.message]
+        await verify.guest_issue(relevant_user, False)
+        del my_cgh.guest_requests[reaction.message]
+        embed_to_edit = reaction.message.embeds[0]
+        embed_to_edit.title = "Guest Pass Denied!"
+        embed_to_edit.add_field(name="Denied By", value="%s#%s" % (user.name, user.discriminator), inline=False)
+        embed_to_edit.colour = discord.Colour.from_rgb(255, 0, 0)
+        await reaction.message.edit(embed=embed_to_edit)
+
+    else:
+        # We can ignore it
+        return
 
 
 @client.event
@@ -65,7 +107,7 @@ async def on_message(message):
             await message.add_reaction('👍')
 
 
-client.activity = discord.Activity(name="Evo tear his hair out", type=discord.ActivityType.watching)
+client.activity = discord.Activity(name="in TEST MODE", type=discord.ActivityType.playing)
 # verify.send_code("ejfear21@g.holycross.edu", "test")
 
 client.run("NzcxODAwMjA3NzMzNjg2Mjg0.X5xY9A.Zefj_2DQSTRS3lMPyXOFpfB0V4A")
