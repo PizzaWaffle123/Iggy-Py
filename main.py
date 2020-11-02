@@ -48,6 +48,8 @@ async def on_message(message):
         results = await verify.new_dm_input(message.author, message.content)
         if results[0] == 2:
             await my_cgh.verify_user(message.author, results[1])
+        elif results[0] == 3:
+            await my_cgh.notify_of_guest(message.author)
 
     if message.content.startswith("$count"):
         await message.channel.send("%d" % my_cgh.count_members())
@@ -58,6 +60,8 @@ async def on_message(message):
         if message_parts[1] == "verify":
             await verify.new_session(message.author)
         if message_parts[1] == "react":
+            await message.add_reaction("\U0001f7e9")
+            await message.add_reaction("\U0001f7e5")
             await message.add_reaction('👍')
 
 
