@@ -45,7 +45,7 @@ async def on_message(message):
         return
 
     if isinstance(message.channel, discord.DMChannel):
-        results = verify.new_dm_input(message.author, message.content)
+        results = await verify.new_dm_input(message.author, message.content)
         if results[0] == 2:
             await my_cgh.verify_user(message.author, results[1])
 
