@@ -93,8 +93,12 @@ async def on_message(message):
         elif results[0] == 3:
             await my_cgh.notify_of_guest(message.author)
 
+    elif not message.content.startswith("$"):
+        return
+
     if message.content.startswith("$count"):
         await message.channel.send("%d" % my_cgh.count_members())
+
     elif message.content.startswith("$test"):
         message_parts = message.content.split(" ")
         if len(message_parts) < 2:
