@@ -57,6 +57,8 @@ async def on_message(message):
             return
         if message_parts[1] == "verify":
             await verify.new_session(message.author)
+        if message_parts[1] == "react":
+            await message.add_reaction('👍')
 
 
 client.activity = discord.Activity(name="Evo tear his hair out", type=discord.ActivityType.watching)
