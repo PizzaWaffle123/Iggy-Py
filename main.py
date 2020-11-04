@@ -50,7 +50,8 @@ async def on_reaction_add(reaction, user):
         await verify.guest_issue(relevant_user, True)
         del my_cgh.guest_requests[reaction.message]
         embed_to_edit = reaction.message.embeds[0]
-        embed_to_edit.title = "Guest Pass Approved!"
+        embed_to_edit.title = "Guest Pass Approved"
+        embed_to_edit.description = ""
         embed_to_edit.add_field(name="Approved By", value="%s#%s" % (user.name, user.discriminator), inline=False)
         embed_to_edit.colour = discord.Colour.from_rgb(0, 255, 0)
         await reaction.message.edit(embed=embed_to_edit)
@@ -61,7 +62,8 @@ async def on_reaction_add(reaction, user):
         await verify.guest_issue(relevant_user, False)
         del my_cgh.guest_requests[reaction.message]
         embed_to_edit = reaction.message.embeds[0]
-        embed_to_edit.title = "Guest Pass Denied!"
+        embed_to_edit.title = "Guest Pass Denied"
+        embed_to_edit.description = ""
         embed_to_edit.add_field(name="Denied By", value="%s#%s" % (user.name, user.discriminator), inline=False)
         embed_to_edit.colour = discord.Colour.from_rgb(255, 0, 0)
         await reaction.message.edit(embed=embed_to_edit)
