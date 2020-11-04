@@ -19,7 +19,6 @@ class CGH:
                 if role in [self.role_crusader, self.role_eboard]:
                     count += 1
                     break
-
         return count
 
     async def new_user(self, user):
@@ -49,14 +48,14 @@ class CGH:
         username_change = discord.Embed()
         username_change.title = "User Changed Name"
         username_change.colour = discord.Colour.from_rgb(245, 166, 35)
+        username_change.description = "Make sure to update the verified user sheet immediately!"
         username_change.add_field(name="Previous", value=old_username, inline=True)
         username_change.add_field(name="Current", value=new_username, inline=True)
-        username_change.description = "Make sure to update the verified user sheet immediately!"
         await self.channel_member_log.send(embed=username_change)
 
     async def notify_of_guest(self, user):
         guest_request = discord.Embed()
-        guest_request.title = "User Requesting Guest Pass!"
+        guest_request.title = "User Requesting Guest Pass"
         guest_request.set_thumbnail(url=user.avatar_url)
         guest_request.description = "React with either a green or red square to approve/deny the request."
         guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)

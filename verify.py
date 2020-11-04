@@ -12,50 +12,54 @@ color_pending = discord.Colour.from_rgb(245, 166, 35)
 em_stage0 = discord.Embed()  # Welcome to CGH! Please enter your email!\
 em_stage0.title = "Welcome to the Crusader Gaming Hub!"
 em_stage0.description = "Before you can access the server, you'll need to verify yourself as a Holy Cross student.\n" \
-                        "Please enter your @g.holycross.edu email address below. If you would like to request a " \
-                        "Guest Pass, simply say \"guest\"."
+                        "**Please enter your @g.holycross.edu email address below.**\n" \
+                        "*If you would like to request a Guest Pass, simply say \"guest\".*"
 em_stage0.colour = color_okay
 
 em_stage0_err = discord.Embed() # Invalid email! Try again!
-em_stage0_err.title = "Invalid Email Address!"
-em_stage0_err.description = "Hmmm, it looks like that isn't a valid Holy Cross email address. Try entering it again."
+em_stage0_err.title = "Invalid Email Address"
+em_stage0_err.description = "Hmm, it looks like that isn't a valid Holy Cross email address. " \
+                            "**Try entering it again.**\n" \
+                            "*If you would like to request a Guest Pass, simply say \"guest\".*"
 em_stage0_err.colour = color_err
 
 em_stage1 = discord.Embed()  # Please enter your verification code!
-em_stage1.title = "Verification Email Sent!"
-em_stage1.description = "Thank you! You should receive a verification code shortly - just send it here when you do!\n" \
+em_stage1.title = "Verification Email Sent"
+em_stage1.description = "An **8-digit verification code** has just been sent to your email. " \
+                        "**Please enter it below.**\n" \
                         "If you haven't received a code within a few minutes, you can check your spam folder.\n" \
-                        "Alternatively, you can say \"resend\" to send the email again, or \"restart\" to start over."
-em_stage1.colour = color_okay
+                        "*You can also type \"resend\" to send the email again, or \"restart\" to start over.*"
+em_stage1.colour = color_pending
 
 em_stage1_err = discord.Embed()  # Invalid verification code! Try again!
-em_stage1_err.title = "Invalid Security Code!"
-em_stage1_err.description = "Sorry, that doesn't look like the code I sent you! You can re-enter the code if you think" \
-                            "you typed it incorrectly.\nYou can also say \"resend\" to send the code again, " \
-                            "or \"restart\" to start over."
+em_stage1_err.title = "Invalid Verification Code"
+em_stage1_err.description = "Sorry, that doesn't look like the correct code. **Try entering it again.**" \
+                            "*You can also type \"resend\" to send the email again, or \"restart\" to start over.*"
 em_stage1_err.colour = color_err
 
 em_stage2 = discord.Embed()  # Success!
-em_stage2.title = "Success!"
-em_stage2.description = "Congratulations! You're now verified in the Crusader Gaming Hub, and you should have access " \
-                        "to all channels. Have fun!"
+em_stage2.title = "Email Address Verified"
+em_stage2.description = "Congratulations! You're now a verified student in the Crusader Gaming Hub, " \
+                        "and you should now have access to all channels.\n" \
+                        "*Have fun!*"
 em_stage2.colour = color_success
 
 em_stage3 = discord.Embed()  # Guest Pass awaiting approval
-em_stage3.title = "Guest Pass Requested!"
-em_stage3.description = "I've notified the moderators that you are requesting a Guest Pass. You'll be notified if " \
-                        "your request is accepted or declined. Thank you!"
+em_stage3.title = "Guest Pass Requested"
+em_stage3.description = "Your Guest Pass request has been sent to our moderator team. " \
+                        "You'll be notified when your request is accepted or denied."
 em_stage3.colour = color_pending
 
 em_stage3_success = discord.Embed()  # Guest Pass approved!
 em_stage3_success.title = "Guest Pass Approved!"
-em_stage3_success.description = "Congratulations! You've been issued a Guest Pass, and you should now have access " \
-                                "to the Crusader Gaming Hub. Have fun!"
+em_stage3_success.description = "Congratulations! Your request has been approved by our moderator team, " \
+                                "and you should now have access to all channels.\n" \
+                                "*Have fun!*"
 em_stage3_success.colour = color_success
 
 em_stage3_failure = discord.Embed()  # Guest Pass declined!
-em_stage3_failure.title = "Guest Pass Declined!"
-em_stage3_failure.description = "Sorry, but the moderators have not approved your request for a Guest Pass. " \
+em_stage3_failure.title = "Guest Pass Denied"
+em_stage3_failure.description = "Sorry, but your request has been denied by our moderator team. " \
                                 "Please try again another time, or check in with the person who invited you."
 em_stage3_failure.colour = color_err
 

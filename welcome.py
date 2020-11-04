@@ -25,7 +25,8 @@ welcome_bodies = [
     "Congratulations, you are lucky number {count}!\nClaim your free iPhone 11 now!",
     "Now Serving: {count}",
     "{count}! It's a magic number!",
-    "{count} members? That's crazy!"
+    "{count} members? That's crazy!",
+    "{count} members? That's actually insane!"
 ]
 
 
