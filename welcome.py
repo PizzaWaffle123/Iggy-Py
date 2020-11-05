@@ -14,7 +14,8 @@ welcome_titles = [
     "THE CREATURES OF PANDORA GROW STRONGER",
     "RISE AND SHINE, MR. FREEMAN",
     "INSERT COIN TO CONTINUE",
-    "PRESS ANY KEY TO CONTINUE"
+    "PRESS ANY KEY TO CONTINUE",
+    "A NEW GAMER ENTERS THE GAMER ZONE"
 ]
 
 welcome_bodies = [
@@ -26,13 +27,14 @@ welcome_bodies = [
     "Now Serving: {count}",
     "{count}! It's a magic number!",
     "{count} members? That's crazy!",
-    "{count} members? That's actually insane!"
+    "{count} members? That's actually insane!",
+    "Welcome welcome Number {count}!"
 ]
 
 
 def get_welcome_embed(member, count):
     embed = discord.Embed()
-    embed.colour = discord.Colour.from_rgb(126, 211, 33)
+    embed.colour = discord.Colour.from_rgb(136, 38, 204)
     title = random.choice(welcome_titles)
     body = random.choice(welcome_bodies)
     body = body.format(count=count)
