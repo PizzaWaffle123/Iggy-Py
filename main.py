@@ -38,6 +38,7 @@ async def on_user_update(before, after):
 @client.event
 async def on_reaction_add(reaction, user):
     print("Heard a reaction added!")
+    print(reaction.emoji.name)
     if reaction.message not in my_cgh.guest_requests.keys():
         return
     if user == client.user:
