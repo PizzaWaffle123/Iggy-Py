@@ -48,16 +48,17 @@ class CGH:
         username_change = discord.Embed()
         username_change.title = "User Changed Name"
         username_change.colour = discord.Colour.from_rgb(245, 166, 35)
-        username_change.description = "Make sure to update the verified user sheet immediately!"
+        username_change.description = "Don't forget to update the Discord roster!"
         username_change.add_field(name="Previous", value=old_username, inline=True)
         username_change.add_field(name="Current", value=new_username, inline=True)
         await self.channel_member_log.send(embed=username_change)
 
     async def notify_of_guest(self, user):
         guest_request = discord.Embed()
-        guest_request.title = "User Requesting Guest Pass"
+        guest_request.title = "Guest Pass Requested"
         guest_request.set_thumbnail(url=user.avatar_url)
-        guest_request.description = "React with either a green or red square to approve/deny the request."
+        guest_request.description = "\U0001f7e9 Approve\n" \
+                                    "\U0001f7e5 Deny"
         guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
         guest_request.colour = discord.Colour.from_rgb(150, 150, 150)
         sent_message = await self.channel_member_log.send(embed=guest_request)

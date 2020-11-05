@@ -53,7 +53,7 @@ async def on_reaction_add(reaction, user):
         embed_to_edit.title = "Guest Pass Approved"
         embed_to_edit.description = ""
         embed_to_edit.add_field(name="Approved By", value="%s#%s" % (user.name, user.discriminator), inline=False)
-        embed_to_edit.colour = discord.Colour.from_rgb(0, 255, 0)
+        embed_to_edit.colour = discord.Colour.from_rgb(126, 211, 33)
         await reaction.message.edit(embed=embed_to_edit)
 
     elif reaction.emoji == "\U0001f7e5":
@@ -65,7 +65,7 @@ async def on_reaction_add(reaction, user):
         embed_to_edit.title = "Guest Pass Denied"
         embed_to_edit.description = ""
         embed_to_edit.add_field(name="Denied By", value="%s#%s" % (user.name, user.discriminator), inline=False)
-        embed_to_edit.colour = discord.Colour.from_rgb(255, 0, 0)
+        embed_to_edit.colour = discord.Colour.from_rgb(214, 40, 61)
         await reaction.message.edit(embed=embed_to_edit)
 
     else:
