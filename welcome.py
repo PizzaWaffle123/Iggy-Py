@@ -1,6 +1,9 @@
 import random
 import discord
 
+
+# Yes, these are just lists.
+# Yes, you can add or remove entries however you please.
 welcome_titles = [
     "NEW CHALLENGER APPROACHING",
     "NEW MEMBER INCOMING",
@@ -18,6 +21,9 @@ welcome_titles = [
     "A NEW GAMER ENTERS THE GAMER ZONE"
 ]
 
+# Note: Anywhere that {count} is shown will be formatted out to include the count parameter in the get_welcome_embed
+# function. {count} will only get formatted as the number itself, it WILL NOT become ordinal (1st, 2nd, 3rd, etc.).
+# If you add any new bodies, you do not need to include {count}.
 welcome_bodies = [
     "Say \"hi\" to number {count}!",
     "Now the server's at {count} members!",
@@ -33,6 +39,8 @@ welcome_bodies = [
 
 
 def get_welcome_embed(member, count):
+    # Returns an embed which can then be sent in a message.
+    # Working with embeds is really fun and should be self-explanatory.
     embed = discord.Embed()
     embed.colour = discord.Colour.from_rgb(136, 38, 204)
     title = random.choice(welcome_titles)
