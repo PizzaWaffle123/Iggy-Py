@@ -9,6 +9,9 @@ color_err = discord.Colour.from_rgb(214, 40, 61)
 color_success = discord.Colour.from_rgb(126, 211, 33)
 color_pending = discord.Colour.from_rgb(245, 166, 35)
 
+# Anything prefixed with em_ is an embed object, to be sent in a message.
+# You can see what the embeds are used for by reading their contents - should be pretty clear.
+
 em_stage0 = discord.Embed()  # Welcome to CGH! Please enter your email!\
 em_stage0.title = "Welcome to the Crusader Gaming Hub!"
 em_stage0.description = "Before you can access the server, you'll need to verify yourself as a Holy Cross student.\n" \
@@ -65,8 +68,8 @@ em_stage3_failure.colour = color_err
 
 
 port = 465
-password = "dogxbxvpxhdwfyhj"
-email = "noreply.iggybot@gmail.com"
+password = "PUT YOUR APP-SPECIFIC GMAIL PASSWORD HERE"
+email = "PUT YOUR SENDER EMAIL ADDRESS HERE"
 message = """\
 Subject: Verification Code
 
@@ -95,6 +98,7 @@ context = ssl.create_default_context()
 
 
 def send_code(user_email, code):
+    # Actually sends the verification email.
     global message
     global email
     with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
@@ -104,6 +108,7 @@ def send_code(user_email, code):
 
 
 def random_code(length):
+    # Generates a random numerical code with provided length, and returns it as a string.
     code = ""
     for i in range(length):
         code += str(random.randint(0, 9))
@@ -111,12 +116,15 @@ def random_code(length):
 
 
 def email_is_valid(supplied_email):
+    # Checks if the given email is a Holy Cross email.
+    # You will likely want to modify this.
     if supplied_email.endswith("@g.holycross.edu"):
         return True
     return False
 
 
 async def guest_issue(member, approval):
+    # Notifies user if their Guest Pass has been approved or denied.
     if approval is True:
         await member.dm_channel.send(embed=em_stage3_success)
     else:
@@ -126,6 +134,7 @@ async def guest_issue(member, approval):
 
 async def new_dm_input(member, u_input):
     # Returns a Tuple (user stage, response info)
+    # This function happens whenever a user sends a DM to the bot.
     if member not in active_sessions.keys():
         return
     member_vs = active_sessions[member]
@@ -172,6 +181,8 @@ async def new_dm_input(member, u_input):
 
 
 async def new_session(member):
+    # Used to initiate a verification session over DMs with a user.
+    # We call this function whenever someone new joins CGH.
     new_user_queue.append(member)
     if member.dm_channel is None:
         await member.create_dm()
@@ -180,6 +191,9 @@ async def new_session(member):
 
 
 def verify_listener():
+    # Really cheesy busy loop to listen for new users who need verification.
+    # This loop spins on a separate thread so it shouldn't block the rest of the bot.
+    # Shoutout to kwalsh.
     global active_sessions
     while True:
         while not new_user_queue:
@@ -187,7 +201,6 @@ def verify_listener():
         print("New user noticed!")
         member = new_user_queue.pop(0)
         active_sessions[member] = VerifyState()
-
 
 
 verify_thread = threading.Thread(target=verify_listener)

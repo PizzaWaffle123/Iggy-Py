@@ -9,6 +9,7 @@ my_cgh = None
 
 @client.event
 async def on_ready():
+    # This event happens when the bot spins up.
     global my_cgh
     print('Logged on as {0}!'.format(client.user))
     my_cgh = cgh.CGH(client.guilds[0])
@@ -16,6 +17,7 @@ async def on_ready():
 
 @client.event
 async def on_member_join(member):
+    # This event happens when someone joins a server the bot is part of.
     global my_cgh
     await my_cgh.new_user(member)
     await verify.new_session(member)
@@ -23,12 +25,15 @@ async def on_member_join(member):
 
 @client.event
 async def on_member_leave(member):
+    # This event happens when someone leaves a server the bot is part of.
     global my_cgh
     await my_cgh.user_left(member)
 
 
 @client.event
 async def on_user_update(before, after):
+    # This event happens when something (username, nickname, pfp) about a server member changes.
+    # In CGH, we use this to notify us of username changes only.
     before_name = "%s#%s" % (before.name, before.discriminator)
     after_name = "%s#%s" % (after.name, after.discriminator)
     if before_name != after_name:
@@ -37,6 +42,7 @@ async def on_user_update(before, after):
 
 @client.event
 async def on_reaction_add(reaction, user):
+    # This event happens whenever a reaction gets added to a message the bot can see.
     print("Heard a reaction added!")
     print(reaction.emoji)
     if reaction.message not in my_cgh.guest_requests.keys():
@@ -76,6 +82,8 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_member_update(before, after):
+    # This event happens whenever something server-specific happens to a user.
+    # We use this to track role changes.
     before_roles = set(before.roles)
     after_roles = set(after.roles)
     role_changed = after_roles - before_roles
@@ -86,6 +94,7 @@ async def on_member_update(before, after):
 
 @client.event
 async def on_message(message):
+    # This event happens whenever the bot hears a message, either in a server or in a DM.
     if message.author == client.user:
         return
 
@@ -114,7 +123,7 @@ async def on_message(message):
             await message.add_reaction('👍')
 
 
+# Sets the status of the bot, visible in user sidebar.
 client.activity = discord.Activity(name="in TEST MODE", type=discord.ActivityType.playing)
-# verify.send_code("ejfear21@g.holycross.edu", "test")
-
-client.run("NzcxODAwMjA3NzMzNjg2Mjg0.X5xY9A.Zefj_2DQSTRS3lMPyXOFpfB0V4A")
+# Starts the bot.
+client.run("PUT YOUR DISCORD BOT TOKEN INSIDE THESE QUOTES")
