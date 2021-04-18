@@ -75,8 +75,8 @@ em_stage4.colour = color_success
 
 
 port = 465
-password = "PUT YOUR APP-SPECIFIC GMAIL PASSWORD HERE"
-email = "PUT YOUR SENDER EMAIL ADDRESS HERE"
+password = "dogxbxvpxhdwfyhj"
+email = "noreply.iggybot@gmail.com"
 message = """\
 Subject: Verification Code
 
