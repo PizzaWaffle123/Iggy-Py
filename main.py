@@ -126,6 +126,6 @@ async def on_message(message):
 
 
 # Sets the status of the bot, visible in user sidebar.
-client.activity = discord.Activity(name="in TEST MODE", type=discord.ActivityType.playing)
+client.activity = discord.Activity(name="Version 2.0!", type=discord.ActivityType.playing)
 # Starts the bot.
-client.run("PUT YOUR DISCORD BOT TOKEN INSIDE THESE QUOTES")
+client.run("NzcxODAwMjA3NzMzNjg2Mjg0.X5xY9A.Zefj_2DQSTRS3lMPyXOFpfB0V4A")
