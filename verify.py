@@ -16,7 +16,8 @@ em_stage0 = discord.Embed()  # Welcome to CGH! Please enter your email!\
 em_stage0.title = "Welcome to the Crusader Gaming Hub!"
 em_stage0.description = "Before you can access the server, you'll need to verify yourself as a Holy Cross student.\n" \
                         "**Please enter your @g.holycross.edu email address below.**\n" \
-                        "*If you would like to request a Guest Pass, simply say \"guest\".*"
+                        "*If you would like to request a Guest Pass, simply say \"guest\".*\n" \
+                        "*If you are a prospective student (class of 2025), simply say \"2025\".*"
 em_stage0.colour = color_okay
 
 em_stage0_err = discord.Embed() # Invalid email! Try again!
@@ -65,6 +66,12 @@ em_stage3_failure.title = "Guest Pass Denied"
 em_stage3_failure.description = "Sorry, but your request has been denied by our moderator team. " \
                                 "Please try again another time, or check in with the person who invited you."
 em_stage3_failure.colour = color_err
+
+em_stage4 = discord.Embed() # Prospective Student
+em_stage3.title = "Prospective Student Accepted"
+em_stage4.description = "As you have claimed to be a prospective student, you now have access to the server. "\
+                        "*Have fun!*"
+em_stage4.colour = color_success
 
 
 port = 465
@@ -146,7 +153,10 @@ async def new_dm_input(member, u_input):
             active_sessions[member].stage = 3
             await member.dm_channel.send(embed=em_stage3)
             return 3, "guest"
-
+        elif u_input.startswith("2025"):
+            active_sessions[member].stage = 4
+            await member.dm_channel.send(embed=em_stage4)
+            return 4, "prospective"
         elif email_is_valid(u_input):
             active_sessions[member].code = random_code(8)
             active_sessions[member].email = u_input

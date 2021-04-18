@@ -104,6 +104,8 @@ async def on_message(message):
             await my_cgh.verify_user(message.author, results[1])
         elif results[0] == 3:
             await my_cgh.notify_of_guest(message.author)
+        elif results[0] == 4:
+            await my_cgh.verify_guest(message.author)
 
     elif not message.content.startswith("$"):
         return

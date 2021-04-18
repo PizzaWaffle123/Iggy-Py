@@ -49,6 +49,21 @@ class CGH:
         logged_user.colour = discord.Colour.from_rgb(126, 211, 33)
         await self.channel_member_log.send(embed=logged_user)
 
+    async def verify_user_prospective(self, user):
+        member = self.guild.get_member(user_id=user.id)
+        if member is None:
+            return
+        if self.role_pending in member.roles:
+            await member.remove_roles(self.role_pending)
+        await member.add_roles(self.role_crusader)
+        logged_user = discord.Embed()
+        logged_user.title = "New Prospective User"
+        logged_user.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
+        logged_user.add_field(name="Year of Graduation", value="2025", inline=False)
+        logged_user.set_thumbnail(url=user.avatar_url)
+        logged_user.colour = discord.Colour.from_rgb(66, 221, 245)
+        await self.channel_member_log.send(embed=logged_user)
+
     async def username_update(self, u_before, u_after):
         # Handles logging of users changing their username.
         old_username = "%s#%s" % (u_before.name, u_before.discriminator)
