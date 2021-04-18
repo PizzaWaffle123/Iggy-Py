@@ -68,7 +68,7 @@ em_stage3_failure.description = "Sorry, but your request has been denied by our 
 em_stage3_failure.colour = color_err
 
 em_stage4 = discord.Embed() # Prospective Student
-em_stage3.title = "Prospective Student Accepted"
+em_stage4.title = "Prospective Student Accepted"
 em_stage4.description = "As you have claimed to be a prospective student, you now have access to the server. "\
                         "*Have fun!*"
 em_stage4.colour = color_success
