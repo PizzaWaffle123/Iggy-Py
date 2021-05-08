@@ -13,7 +13,7 @@ async def on_ready():
     global my_cgh
     print('Logged on as {0}!'.format(client.user))
     my_cgh = cgh.CGH(client.guilds[0])
-
+    client.activity = discord.Activity(name="Version 2.5.0", type=discord.ActivityType.competing)
 
 @client.event
 async def on_member_join(member):
@@ -89,7 +89,8 @@ async def on_member_update(before, after):
     role_changed = after_roles - before_roles
     if my_cgh.role_crusader in role_changed:
         print("The Crusader role was appended to somebody!")
-        await my_cgh.channel_general.send(embed=welcome.get_welcome_embed(after, my_cgh.count_members()))
+        await my_cgh.channel_general.send(content="<@&839897854712479784>",
+                                          embed=welcome.get_welcome_embed(after, my_cgh.count_members()))
 
 
 @client.event
@@ -106,6 +107,11 @@ async def on_message(message):
             await my_cgh.notify_of_guest(message.author)
         elif results[0] == 4:
             await my_cgh.verify_guest(message.author)
+
+    elif message.channel.id == 840674330479689758 and message.webhook_id != 0:
+        # We received a published announcement and confirmed it was a webhook!
+        print("Heard a published announcement!")
+        await my_cgh.bullhorn_send(message)
 
     elif not message.content.startswith("$"):
         return
@@ -126,6 +132,6 @@ async def on_message(message):
 
 
 # Sets the status of the bot, visible in user sidebar.
-client.activity = discord.Activity(name="Version 2.0!", type=discord.ActivityType.playing)
+client.activity = discord.Activity(name="Version 2.5.0", type=discord.ActivityType.competing)
 # Starts the bot.
 client.run("NzcxODAwMjA3NzMzNjg2Mjg0.X5xY9A.Zefj_2DQSTRS3lMPyXOFpfB0V4A")
