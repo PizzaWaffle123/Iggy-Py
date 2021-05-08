@@ -10,6 +10,7 @@ class CGH:
         self.role_crusader = guild.get_role(432940984452513795)
         self.role_eboard = guild.get_role(681213070592573481)
         self.role_guest = guild.get_role(702380501188739163)
+        self.role_bullhorn = guild.get_role(839899985143398480)
         self.channel_general = guild.get_channel(441445458897010717)
         self.channel_member_log = guild.get_channel(682342799940649014)
         self.guest_requests = {}
@@ -122,6 +123,33 @@ class CGH:
         departure_notice.set_author(name="%s#%s" % (member.name, member.discriminator), url=None,
                                     icon_url=member.avatar_url)
         await self.channel_member_log.send(embed=departure_notice)
+
+    async def bullhorn_send(self, message):
+        bullhorn_list = []
+        for member in self.guild.members:
+            # Step 1: Identify all users opted in to Bullhorn.
+            bullhorn_mem = False
+            for role in member.roles:
+                if role == self.role_bullhorn:
+                    bullhorn_mem = True
+                    break
+            if bullhorn_mem:
+                bullhorn_list.append(member)
+
+        for bh_member in bullhorn_list:
+            # Step 2: Send the message to all users opted in to Bullhorn.
+            if bh_member.dm_channel is None:
+                await bh_member.create_dm()
+            try:
+                print("Sending bullhorn to user: " + bh_member.name)
+                await bh_member.dm_channel.send("Incoming Bullhorn from the Crusader Gaming Hub!")
+                await bh_member.dm_channel.send(content=message.content)
+            except discord.errors.Forbidden:
+                print("UNABLE TO SEND BULLHORN - USER MAY HAVE DMs BLOCKED")
+
+
+
+
 
 
 
