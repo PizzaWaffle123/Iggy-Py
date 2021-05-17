@@ -99,9 +99,9 @@ def email_is_valid(supplied_email):
 async def guest_issue(member, approval):
     # Notifies user if their Guest Pass has been approved or denied.
     if approval is True:
-        await active_sessions[member][4].edit(embed=em_stage3_success)
+        await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_guest"))
     else:
-        await active_sessions[member][4].edit(embed=em_stage3_failure)
+        await active_sessions[member][4].edit(embed=get_embed_by_name("stage4_denied"))
     del active_sessions[member]
 
 
@@ -127,4 +127,8 @@ async def new_session(member):
         await member.create_dm()
     print("Starting new session...")
     temp_message = await member.dm_channel.send(embed=get_embed_by_name("stage0"))
+    await temp_message.add_reaction("🟣")
+    await temp_message.add_reaction("⚪")
+    await temp_message.add_reaction("🟡")
+    await temp_message.add_reaction("🔵")
     active_sessions[member] = (0, "", "", "", temp_message)  # default instantiation
