@@ -122,6 +122,12 @@ async def new_input(member, u_input_str, u_input_react):
             print("Student!")
             active_sessions[member] = (1, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
             await active_sessions[member][4].edit(embed=get_embed_by_name("stage1"))
+            await member_vs[4].clear_reactions()
+
+            await member_vs[4].add_reaction("🇦")
+            await member_vs[4].add_reaction("🇧")
+            await member_vs[4].add_reaction("🇨")
+            await member_vs[4].add_reaction("🇩")
         elif u_input_react.emoji == "⚪":
             # White Circle - GUEST
             print("Guest!")
@@ -134,13 +140,28 @@ async def new_input(member, u_input_str, u_input_react):
             print("Prospective!")
             active_sessions[member] = (5, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
             await active_sessions[member][4].edit(embed=get_embed_by_name("stage5"))
+            await member_vs[4].clear_reactions()
         elif u_input_react.emoji == "🔵":
             # Blue Circle - ALUM
             print("Alum!")
             active_sessions[member] = (6, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
             await active_sessions[member][4].edit(embed=get_embed_by_name("stage6"))
+            await member_vs[4].clear_reactions()
         else:
             return
+    elif member_vs[0] == 1:
+        # User has picked their class year.
+        if u_input_react.emoji == "🇦":
+            pass
+        elif u_input_react.emoji == "🇧":
+            pass
+        elif u_input_react.emoji == "🇨":
+            pass
+        elif u_input_react.emoji == "🇩":
+            pass
+        else:
+            return
+        await session_cleanup(member)
 
 
 async def new_session(member):
