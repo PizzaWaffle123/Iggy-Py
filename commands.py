@@ -2,6 +2,7 @@
 # STATUS: IN PROGRESS
 
 from discord.ext import commands
+from datetime import datetime
 import discord
 import verify
 import cgh
@@ -22,6 +23,9 @@ async def test(ctx, arg1):
         await ctx.message.add_reaction('👍')
     elif arg1 == "welcome":
         await cgh.welcome_message(ctx.author)
+    elif arg1 == "graduate":
+        sen_count = await cgh.count_seniors(str(datetime.now().year))
+        await ctx.send("Eligible Seniors: %d" % sen_count)
 
 
 @commands.command()
@@ -56,7 +60,14 @@ async def role_reg(ctx, arg1, arg2):
     pass
 
 
+@commands.command()
+async def graduate(ctx):
+    sen_count = await cgh.graduate_users(str(datetime.now().year))
+    await ctx.send("Graduated Seniors: %d" % sen_count)
+
+
 def setup(bot):
     bot.add_command(test)
     bot.add_command(count)
     bot.add_command(stats)
+    bot.add_command(graduate)
