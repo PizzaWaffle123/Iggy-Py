@@ -25,26 +25,26 @@ active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,
 # stage is int, menu_message is message, channel is channel, all others are string
 # Quick reminder of verification stages
 # Stage 0 - User has just joined CGH.
-    # User is prompted to react on the menu to declare what group they are in (Student, Guest, etc.)
-    # Available groups are: Student, Prospective, Guest, Alumnus/Alumna
+# User is prompted to react on the menu to declare what group they are in (Student, Guest, etc.)
+# Available groups are: Student, Prospective, Guest, Alumnus/Alumna
 # Stage 1 - User has selected Student and must now select their class year.
 # Stage 2 - User has selected their class year and we are now waiting for them to provide their email address.
 # Stage 3 - User has provided a valid email address, and we are now waiting for them to provide the security code.
-    # User may also opt to re-send verification code if they have not received one.
-    # User may also opt to return to Stage 2 and re-enter their email.
+# User may also opt to re-send verification code if they have not received one.
+# User may also opt to return to Stage 2 and re-enter their email.
 # Stage 4 - User has selected Guest and is now waiting for an approval/denial.
 # Stage 5 - User has selected Prospective and must now enter their full name to continue.
 # Stage 6 - User has selected Alumnus/Alumna and must now select their year of graduation.
 # Stage 7 - User has selected their class year and we are now waiting for them to provide their email address.
-    # User may also react here to indicate they do not have access to their Holy Cross email address.
-    # This will prompt moderators to perform a manual verification.
+# User may also react here to indicate they do not have access to their Holy Cross email address.
+# This will prompt moderators to perform a manual verification.
 # Stage 8 - User provided a valid email address and we are now waiting for them to provide the security code.
-    # See notes for stage 3.
+# See notes for stage 3.
 # Stage 9 - This is the "success" generic stage. It occurs in the following cases:
-    # STUDENT - User verified a valid student email address.
-    # ALUM - User verified a valid email address OR otherwise proved they are an alum.
-    # GUEST - User's guest pass request was approved.
-    # PROSPECTIVE - User entered their full name.
+# STUDENT - User verified a valid student email address.
+# ALUM - User verified a valid email address OR otherwise proved they are an alum.
+# GUEST - User's guest pass request was approved.
+# PROSPECTIVE - User entered their full name.
 
 context = ssl.create_default_context()
 
@@ -85,6 +85,8 @@ def email_is_valid(supplied_email):
 async def session_cleanup(member):
     global active_sessions
     print("Channel deletion in 30 seconds.")
+    await active_sessions[member][5].send(content=member.mention + "\nYour verification session has concluded. This "
+                                                                   "channel will automatically delete in 30 seconds.")
     time.sleep(30)
     await active_sessions[member][5].delete(reason="Verification session ended.")
     print("Channel deleted.")
@@ -97,7 +99,7 @@ async def guest_issue(member, approval):
         await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_guest"))
     else:
         await active_sessions[member][4].edit(embed=get_embed_by_name("stage4_denied"))
-    del active_sessions[member]
+    await session_cleanup(member)
 
 
 async def new_input(member, u_input_str, u_input_react):
@@ -118,21 +120,27 @@ async def new_input(member, u_input_str, u_input_react):
         if u_input_react.emoji == "🟣":
             # Purple Circle - STUDENT
             print("Student!")
+            active_sessions[member] = (1, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
+            await active_sessions[member][4].edit(embed=get_embed_by_name("stage1"))
         elif u_input_react.emoji == "⚪":
             # White Circle - GUEST
             print("Guest!")
+            active_sessions[member] = (4, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
+            await active_sessions[member][4].edit(embed=get_embed_by_name("stage4"))
+            await member_vs[4].clear_reactions()
+            await cgh.notify_of_guest(member)
         elif u_input_react.emoji == "🟡":
             # Yellow Circle - PROSPECTIVE
             print("Prospective!")
+            active_sessions[member] = (5, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
+            await active_sessions[member][4].edit(embed=get_embed_by_name("stage5"))
         elif u_input_react.emoji == "🔵":
             # Blue Circle - ALUM
             print("Alum!")
+            active_sessions[member] = (6, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
+            await active_sessions[member][4].edit(embed=get_embed_by_name("stage6"))
         else:
             return
-
-        await member_vs[4].edit(embed=get_embed_by_name("TEST"))
-        await member_vs[4].clear_reactions()
-        await session_cleanup(member)
 
 
 async def new_session(member):
