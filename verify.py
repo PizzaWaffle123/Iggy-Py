@@ -20,7 +20,6 @@ em_stage0.description = "Before you can access the server, you'll need to verify
                         "*If you are a prospective student (class of 2025), simply say \"2025\".*"
 em_stage0.colour = color_okay
 
-
 port = 465
 password = "dogxbxvpxhdwfyhj"
 email = "noreply.iggybot@gmail.com"
