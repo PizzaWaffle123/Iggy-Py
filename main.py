@@ -18,16 +18,14 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     # This event happens when someone joins a server the bot is part of.
-    global my_cgh
-    await my_cgh.new_user(member)
+    await cgh.new_user(member)
     await verify.new_session(member)
 
 
 @bot.event
 async def on_member_leave(member):
     # This event happens when someone leaves a server the bot is part of.
-    global my_cgh
-    await my_cgh.user_left(member)
+    await cgh.user_left(member)
 
 
 @bot.event
@@ -37,7 +35,7 @@ async def on_user_update(before, after):
     before_name = "%s#%s" % (before.name, before.discriminator)
     after_name = "%s#%s" % (after.name, after.discriminator)
     if before_name != after_name:
-        await my_cgh.username_update(before, after)
+        await cgh.username_update(before, after)
 
 
 @bot.event
@@ -45,17 +43,19 @@ async def on_reaction_add(reaction, user):
     # This event happens whenever a reaction gets added to a message the bot can see.
     print("Heard a reaction added!")
     print(reaction.emoji)
-    if reaction.message not in my_cgh.guest_requests.keys():
+    if reaction.message not in cgh.guest_requests.keys():
+        verify.new_input(user, None, reaction)
         return
     if user == bot.user:
         return
 
+
     if reaction.emoji == "\U0001f7e9":
         # Was it a green square?
-        await my_cgh.verify_guest(reaction.message)
-        relevant_user = my_cgh.guest_requests[reaction.message]
+        await cgh.verify_guest(reaction.message)
+        relevant_user = cgh.guest_requests[reaction.message]
         await verify.guest_issue(relevant_user, True)
-        del my_cgh.guest_requests[reaction.message]
+        del cgh.guest_requests[reaction.message]
         embed_to_edit = reaction.message.embeds[0]
         embed_to_edit.title = "Guest Pass Approved"
         embed_to_edit.description = ""
@@ -65,9 +65,9 @@ async def on_reaction_add(reaction, user):
 
     elif reaction.emoji == "\U0001f7e5":
         # How about a red square?
-        relevant_user = my_cgh.guest_requests[reaction.message]
+        relevant_user = cgh.guest_requests[reaction.message]
         await verify.guest_issue(relevant_user, False)
-        del my_cgh.guest_requests[reaction.message]
+        del cgh.guest_requests[reaction.message]
         embed_to_edit = reaction.message.embeds[0]
         embed_to_edit.title = "Guest Pass Denied"
         embed_to_edit.description = ""
@@ -101,19 +101,19 @@ async def on_message(message):
 
     # If the message is sent in a DM channel, do a verification thing.
     if isinstance(message.channel, discord.DMChannel):
-        results = await verify.new_dm_input(message.author, message.content)
+        results = await verify.new_input(message.author, message.content, None)
         if results[0] == 2:
-            await my_cgh.verify_user(message.author, results[1])
+            await cgh.verify_user(message.author, results[1])
         elif results[0] == 3:
-            await my_cgh.notify_of_guest(message.author)
+            await cgh.notify_of_guest(message.author)
         elif results[0] == 4:
-            await my_cgh.verify_guest(message.author)
+            await cgh.verify_guest(message.author)
 
     # If the message is a published webhook, bullhorn it!
     elif message.channel.id == 840674330479689758 and message.webhook_id != 0:
         # We received a published announcement and confirmed it was a webhook!
         print("Heard a published announcement!")
-        await my_cgh.bullhorn_send(message)
+        await cgh.bullhorn_send(message)
 
     # It's possibly a command?
     else:
