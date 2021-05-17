@@ -2,20 +2,20 @@ import discord
 import cgh
 import welcome
 import verify
+from discord.ext import commands
 
-client = discord.Client(intents=discord.Intents.all())
-my_cgh = None
+bot = commands.Bot(intents=discord.Intents.all(), command_prefix='$')
 
 
-@client.event
+@bot.event
 async def on_ready():
     # This event happens when the bot spins up.
-    global my_cgh
-    print('Logged on as {0}!'.format(client.user))
-    my_cgh = cgh.CGH(client.guilds[0])
-    client.activity = discord.Activity(name="Version 2.5.0", type=discord.ActivityType.competing)
+    print('Logged on as {0}!'.format(bot.user))
+    cgh.setup(bot.guilds[0])
+    bot.load_extension('commands')
 
-@client.event
+
+@bot.event
 async def on_member_join(member):
     # This event happens when someone joins a server the bot is part of.
     global my_cgh
@@ -23,14 +23,14 @@ async def on_member_join(member):
     await verify.new_session(member)
 
 
-@client.event
+@bot.event
 async def on_member_leave(member):
     # This event happens when someone leaves a server the bot is part of.
     global my_cgh
     await my_cgh.user_left(member)
 
 
-@client.event
+@bot.event
 async def on_user_update(before, after):
     # This event happens when something (username, nickname, pfp) about a server member changes.
     # In CGH, we use this to notify us of username changes only.
@@ -40,14 +40,14 @@ async def on_user_update(before, after):
         await my_cgh.username_update(before, after)
 
 
-@client.event
+@bot.event
 async def on_reaction_add(reaction, user):
     # This event happens whenever a reaction gets added to a message the bot can see.
     print("Heard a reaction added!")
     print(reaction.emoji)
     if reaction.message not in my_cgh.guest_requests.keys():
         return
-    if user == client.user:
+    if user == bot.user:
         return
 
     if reaction.emoji == "\U0001f7e9":
@@ -80,7 +80,7 @@ async def on_reaction_add(reaction, user):
         return
 
 
-@client.event
+@bot.event
 async def on_member_update(before, after):
     # This event happens whenever something server-specific happens to a user.
     # We use this to track role changes.
@@ -93,12 +93,13 @@ async def on_member_update(before, after):
                                           embed=welcome.get_welcome_embed(after, my_cgh.count_members()))
 
 
-@client.event
+@bot.event
 async def on_message(message):
     # This event happens whenever the bot hears a message, either in a server or in a DM.
-    if message.author == client.user:
+    if message.author == bot.user:
         return
 
+    # If the message is sent in a DM channel, do a verification thing.
     if isinstance(message.channel, discord.DMChannel):
         results = await verify.new_dm_input(message.author, message.content)
         if results[0] == 2:
@@ -108,30 +109,22 @@ async def on_message(message):
         elif results[0] == 4:
             await my_cgh.verify_guest(message.author)
 
+    # If the message is a published webhook, bullhorn it!
     elif message.channel.id == 840674330479689758 and message.webhook_id != 0:
         # We received a published announcement and confirmed it was a webhook!
         print("Heard a published announcement!")
         await my_cgh.bullhorn_send(message)
 
-    elif not message.content.startswith("$"):
-        return
-
-    if message.content.startswith("$count"):
-        await message.channel.send("%d" % my_cgh.count_members())
-
-    elif message.content.startswith("$test"):
-        message_parts = message.content.split(" ")
-        if len(message_parts) < 2:
-            return
-        if message_parts[1] == "verify":
-            await verify.new_session(message.author)
-        if message_parts[1] == "react":
-            await message.add_reaction("\U0001f7e9")
-            await message.add_reaction("\U0001f7e5")
-            await message.add_reaction('👍')
+    # It's possibly a command?
+    else:
+        await bot.process_commands(message)
 
 
 # Sets the status of the bot, visible in user sidebar.
-client.activity = discord.Activity(name="Version 2.5.0", type=discord.ActivityType.competing)
+bot.activity = discord.Activity(name="Version 3.0-TEST", type=discord.ActivityType.competing)
 # Starts the bot.
-client.run("NzcxODAwMjA3NzMzNjg2Mjg0.X5xY9A.Zefj_2DQSTRS3lMPyXOFpfB0V4A")
+f = open("token.txt", "r")
+bot_token = f.read()
+
+bot.run(bot_token)
+
