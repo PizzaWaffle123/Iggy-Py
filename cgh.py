@@ -30,6 +30,59 @@ def setup(myguild):
             print("Registered new channel {} of ID {}".format(channel[0], channel[1]))
 
 
+def update_from_csv():
+    global roles
+    global channels
+    with open('csv/roles.csv') as csvfile:
+        rolereader = csv.reader(csvfile, dialect='excel')
+        for role in rolereader:
+            # each row of the csv file is in KEY,ROLE_ID format
+            roles[role[0]] = int(role[1])
+            print("Registered new role {} of ID {}".format(role[0], role[1]))
+
+    with open('csv/channels.csv') as csvfile:
+        channelreader = csv.reader(csvfile, dialect='excel')
+        for channel in channelreader:
+            channels[channel[0]] = int(channel[1])
+            print("Registered new channel {} of ID {}".format(channel[0], channel[1]))
+
+
+def get_channel_id_by_name(name):
+    global channels
+    if name in channels.keys():
+        return channels[name]
+    else:
+        return None
+
+
+def get_role_id_by_name(name):
+    global roles
+    if name in roles.keys():
+        return roles[name]
+    else:
+        return None
+
+
+def get_channel_obj_by_name(name):
+    global guild
+    return guild.get_channel(get_channel_id_by_name(name))
+
+
+async def create_verify_session_channel(member):
+    global guild
+    category = get_channel_obj_by_name("cat_verify")
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        guild.me: discord.PermissionOverwrite(read_messages=True),
+        member: discord.PermissionOverwrite(read_messages=True)
+    }
+    channel_name = member.name + "-" + member.discriminator
+    channel_name = channel_name.lower()
+
+    channel = await guild.create_text_channel(channel_name, overwrites=overwrites, category=category)
+    return channel
+
+
 def count_members():
     # Returns a count of the members in the server who have specific roles.
     # In CGH, we use this to only count Crusaders and E-Board members. Guests and Pending users do not get counted.
@@ -54,14 +107,6 @@ async def new_user(user):
         return
     role_pending = guild.get_role(roles["pending"])
     await member.add_roles(role_pending)
-
-
-def get_role_id_by_name(name):
-    global roles
-    if name in roles.keys():
-        return roles[name]
-    else:
-        return None
 
 
 async def verify_user(user, user_email, gradyear):
