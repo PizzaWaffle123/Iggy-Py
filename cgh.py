@@ -3,6 +3,7 @@
 
 import discord
 import csv
+import verify
 import welcome
 
 guild = None
@@ -153,6 +154,32 @@ async def welcome_message(member):
                                                           embed=welcome.get_welcome_embed(member))
 
 
+async def graduate_users(gradyear):
+    global guild
+    global roles
+    grad_counter = 0
+    year_role = guild.get_role(roles[gradyear])
+    alum_role = guild.get_role(roles["alumni"])
+    for member in guild.members:
+        if year_role in member.roles:
+            await member.add_roles(alum_role)
+            grad_counter += 1
+    print("Graduated %d users" % grad_counter)
+    return grad_counter
+
+
+async def count_seniors(gradyear):
+    global guild
+    global roles
+    grad_counter = 0
+    year_role = guild.get_role(roles[gradyear])
+    for member in guild.members:
+        if year_role in member.roles:
+            grad_counter += 1
+    print("Eligible seniors: %d" % grad_counter)
+    return grad_counter
+
+
 async def notify_of_guest(user):
     global guild
     global guest_requests
@@ -164,7 +191,7 @@ async def notify_of_guest(user):
     guest_request.description = "\U0001f7e9 Approve\n" \
                                 "\U0001f7e5 Deny"
     guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    guest_request.colour = discord.Colour.from_rgb(12042958)
+    guest_request.colour = discord.Colour(12042958)
     sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=guest_request)
     await sent_message.add_reaction("\U0001f7e9")  # green square
     await sent_message.add_reaction("\U0001f7e5")  # red square
