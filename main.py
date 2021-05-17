@@ -44,7 +44,7 @@ async def on_reaction_add(reaction, user):
     print("Heard a reaction added!")
     print(reaction.emoji)
     if reaction.message not in cgh.guest_requests.keys():
-        verify.new_input(user, None, reaction)
+        await verify.new_input(user, None, reaction)
         return
     if user == bot.user:
         return
