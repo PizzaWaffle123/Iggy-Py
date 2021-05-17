@@ -1,5 +1,9 @@
+# VERSION 3.0 UPGRADE PROJECT
+# STATUS: COMPLETE (Ready For 3.0)
+
 import random
 import discord
+import cgh
 
 
 # Yes, these are just lists.
@@ -18,7 +22,9 @@ welcome_titles = [
     "RISE AND SHINE, MR. FREEMAN",
     "INSERT COIN TO CONTINUE",
     "PRESS ANY KEY TO CONTINUE",
-    "A NEW GAMER ENTERS THE GAMER ZONE"
+    "A NEW GAMER ENTERS THE GAMER ZONE",
+    "SO, YOU WANT TO HEAR ANOTHER STORY, EH?",
+    "NOW ABOUT THAT BEER I OWED YA!"
 ]
 
 # Note: Anywhere that {count} is shown will be formatted out to include the count parameter in the get_welcome_embed
@@ -34,18 +40,19 @@ welcome_bodies = [
     "{count}! It's a magic number!",
     "{count} members? That's crazy!",
     "{count} members? That's actually insane!",
-    "Welcome welcome Number {count}!"
+    "Welcome welcome Number {count}!",
+    "Our {ordinal} member!"
 ]
 
 
-def get_welcome_embed(member, count):
+def get_welcome_embed(member):
     # Returns an embed which can then be sent in a message.
     # Working with embeds is really fun and should be self-explanatory.
     embed = discord.Embed()
-    embed.colour = discord.Colour.from_rgb(136, 38, 204)
+    embed.colour = discord.Colour(10444272)
     title = random.choice(welcome_titles)
     body = random.choice(welcome_bodies)
-    body = body.format(count=count)
+    body = body.format(count=cgh.count_members(), ordinal=ordinal(cgh.count_members()))
 
     embed.title = title
     full_name = member.name + "#" + member.discriminator
@@ -53,3 +60,7 @@ def get_welcome_embed(member, count):
     embed.set_thumbnail(url=member.avatar_url)
 
     return embed
+
+
+def ordinal(n):
+    return str(n) + {1: 'st', 2: 'nd', 3: 'rd'}.get(4 if 10 <= n % 100 < 20 else n % 10, "th")
