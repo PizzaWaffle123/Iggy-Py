@@ -260,7 +260,8 @@ async def bullhorn_send(message):
             await bh_member.create_dm()
         try:
             print("Sending bullhorn to user: " + bh_member.name)
-            await bh_member.dm_channel.send("Incoming Bullhorn from the Crusader Gaming Hub!")
+            bullhorn_embed = verify.get_embed_by_name("bullhorn")
+            await bh_member.dm_channel.send(embed=bullhorn_embed)
             await bh_member.dm_channel.send(content=message.content)
         except discord.errors.Forbidden:
             print("UNABLE TO SEND BULLHORN - USER MAY HAVE DMs BLOCKED")
