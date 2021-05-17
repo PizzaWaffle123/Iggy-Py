@@ -54,6 +54,8 @@ def get_welcome_embed(member):
     body = random.choice(welcome_bodies)
     body = body.format(count=cgh.count_members(), ordinal=ordinal(cgh.count_members()))
 
+    body = body + "\n\n**Profile: {}**".format(member.mention)
+
     embed.title = title
     full_name = member.name + "#" + member.discriminator
     embed.add_field(name=full_name, value=body, inline=False)

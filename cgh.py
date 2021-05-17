@@ -3,6 +3,7 @@
 
 import discord
 import csv
+import welcome
 
 guild = None
 roles = {}
@@ -19,13 +20,13 @@ def setup(myguild):
         rolereader = csv.reader(csvfile, dialect='excel')
         for role in rolereader:
             # each row of the csv file is in KEY,ROLE_ID format
-            roles[role[0]] = role[1]
+            roles[role[0]] = int(role[1])
             print("Registered new role {} of ID {}".format(role[0], role[1]))
 
     with open('csv/channels.csv') as csvfile:
         channelreader = csv.reader(csvfile, dialect='excel')
         for channel in channelreader:
-            channels[channel[0]] = channel[1]
+            channels[channel[0]] = int(channel[1])
             print("Registered new channel {} of ID {}".format(channel[0], channel[1]))
 
 
@@ -38,7 +39,7 @@ def count_members():
 
     for member in guild.members:
         for role in member.roles:
-            if str(role.id) in [roles["crusader"], roles["eboard"]]:
+            if role.id in [roles["crusader"], roles["eboard"]]:
                 count += 1
                 break
     return count
@@ -53,6 +54,14 @@ async def new_user(user):
         return
     role_pending = guild.get_role(roles["pending"])
     await member.add_roles(role_pending)
+
+
+def get_role_id_by_name(name):
+    global roles
+    if name in roles.keys():
+        return roles[name]
+    else:
+        return None
 
 
 async def verify_user(user, user_email, gradyear):
@@ -92,6 +101,13 @@ async def username_update(u_before, u_after):
     await guild.get_channel(channels["member_log"]).send(embed=username_change)
 
 
+async def welcome_message(member):
+    global channels
+    global guild
+    await guild.get_channel(channels["server_work"]).send(content="<@&839897854712479784>",
+                                                          embed=welcome.get_welcome_embed(member))
+
+
 async def notify_of_guest(user):
     global guild
     global guest_requests
@@ -104,7 +120,7 @@ async def notify_of_guest(user):
                                 "\U0001f7e5 Deny"
     guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
     guest_request.colour = discord.Colour.from_rgb(12042958)
-    sent_message = await guild.get_channel(channels["member_log"]).send(embed=guest_request)
+    sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=guest_request)
     await sent_message.add_reaction("\U0001f7e9")  # green square
     await sent_message.add_reaction("\U0001f7e5")  # red square
     guest_requests[sent_message] = user
@@ -135,7 +151,7 @@ async def user_left(member):
     global roles
 
     for role in member.roles:
-        if str(role.id) in [roles["crusader"], roles["eboard"]]:
+        if role.id in [roles["crusader"], roles["eboard"]]:
             valid = True
             break
 

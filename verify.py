@@ -1,7 +1,6 @@
 import smtplib
 import ssl
 import random
-import threading
 import discord
 
 color_okay = discord.Colour(4171755)      # Special Blue

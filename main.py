@@ -87,10 +87,10 @@ async def on_member_update(before, after):
     before_roles = set(before.roles)
     after_roles = set(after.roles)
     role_changed = after_roles - before_roles
-    if my_cgh.role_crusader in role_changed:
-        print("The Crusader role was appended to somebody!")
-        await my_cgh.channel_general.send(content="<@&839897854712479784>",
-                                          embed=welcome.get_welcome_embed(after, my_cgh.count_members()))
+    for role in role_changed:
+        if role.id == cgh.get_role_id_by_name("crusader"):
+            cgh.welcome_message(after)
+            break
 
 
 @bot.event

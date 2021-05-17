@@ -21,6 +21,8 @@ async def test(ctx, arg1):
         await ctx.message.add_reaction("\U0001f7e9")
         await ctx.message.add_reaction("\U0001f7e5")
         await ctx.message.add_reaction('👍')
+    elif arg1 == "welcome":
+        await cgh.welcome_message(ctx.author)
 
 
 @commands.command()
