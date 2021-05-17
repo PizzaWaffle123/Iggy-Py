@@ -2,6 +2,7 @@ import smtplib
 import ssl
 import random
 import discord
+import json
 
 color_okay = discord.Colour(4171755)      # Special Blue
 color_err = discord.Colour(15158332)      # Pending Red
@@ -62,6 +63,13 @@ new_user_queue = []
 context = ssl.create_default_context()
 
 
+def get_embed_by_name(name):
+    name = "json/" + name + ".json"
+    with open(name) as jsonfile:
+        data = json.load(jsonfile)
+    return discord.Embed.from_dict(data)
+
+
 def send_code(user_email, code):
     # Actually sends the verification email.
     global message
@@ -97,7 +105,7 @@ async def guest_issue(member, approval):
     del active_sessions[member]
 
 
-async def new_dm_input(member, u_input_str, u_input_react):
+async def new_input(member, u_input_str, u_input_react):
     global active_sessions
     # Returns a Tuple (user stage, response info)
     # This function happens whenever a user reacts or says something in the DM channel.
@@ -106,6 +114,9 @@ async def new_dm_input(member, u_input_str, u_input_react):
     if member not in active_sessions.keys():
         return
     member_vs = active_sessions[member]  # vs stands for "verify state", see above
+    if u_input_react is None and u_input_str is None:
+        # We should...never be here. Time to panic.
+        return
 
 
 async def new_session(member):
@@ -115,5 +126,5 @@ async def new_session(member):
     if member.dm_channel is None:
         await member.create_dm()
     print("Starting new session...")
-    active_sessions[member] = (0, "", "", "", "")  # default instantiation
-    active_sessions[member][4] = await member.dm_channel.send(embed=em_stage0)
+    temp_message = await member.dm_channel.send(embed=get_embed_by_name("stage0"))
+    active_sessions[member] = (0, "", "", "", temp_message)  # default instantiation
