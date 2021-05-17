@@ -64,7 +64,7 @@ context = ssl.create_default_context()
 
 
 def get_embed_by_name(name):
-    name = "json/" + name + ".json"
+    name = "embeds/" + name + ".json"
     with open(name) as jsonfile:
         data = json.load(jsonfile)
     return discord.Embed.from_dict(data)
@@ -117,6 +117,26 @@ async def new_input(member, u_input_str, u_input_react):
     if u_input_react is None and u_input_str is None:
         # We should...never be here. Time to panic.
         return
+
+    if member_vs[0] == 0:
+        # We are expecting a reaction.
+        if u_input_react.emoji == "🟣":
+            # Purple Circle - STUDENT
+            print("Student!")
+        elif u_input_react.emoji == "⚪":
+            # White Circle - GUEST
+            print("Guest!")
+        elif u_input_react.emoji == "🟡":
+            # Yellow Circle - PROSPECTIVE
+            print("Prospective!")
+        elif u_input_react.emoji == "🔵":
+            # Blue Circle - ALUM
+            print("Alum!")
+        else:
+            return
+
+        await member_vs[4].edit(embed=get_embed_by_name("TEST"))
+        await member_vs[4].clear_reactions()
 
 
 async def new_session(member):
