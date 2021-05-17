@@ -1,24 +1,12 @@
 import smtplib
 import ssl
 import random
+import time
+
 import discord
 import json
 
-color_okay = discord.Colour(4171755)      # Special Blue
-color_err = discord.Colour(15158332)      # Pending Red
-color_success = discord.Colour(3066993)   # Event Green
-color_waiting = discord.Colour(16295218)  # Gamer Orange
-
-# Anything prefixed with em_ is an embed object, to be sent in a message.
-# You can see what the embeds are used for by reading their contents - should be pretty clear.
-
-em_stage0 = discord.Embed()  # Welcome to CGH! Please enter your email!\
-em_stage0.title = "Welcome to the Crusader Gaming Hub!"
-em_stage0.description = "Before you can access the server, you'll need to verify yourself as a Holy Cross student.\n" \
-                        "**Please enter your @g.holycross.edu email address below.**\n" \
-                        "*If you would like to request a Guest Pass, simply say \"guest\".*\n" \
-                        "*If you are a prospective student (class of 2025), simply say \"2025\".*"
-em_stage0.colour = color_okay
+import cgh
 
 port = 465
 f = open("email_password.txt", "r")
@@ -33,8 +21,8 @@ Please provide the code to Iggy, and you'll get access to the server. Thanks!\n\
 
 (This bot maintained by the Holy Cross Gaming & Esports Club.)"""
 
-active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,menu_message)
-# stage is int, menu_message is message, all others are string
+active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,menu_message,channel)
+# stage is int, menu_message is message, channel is channel, all others are string
 # Quick reminder of verification stages
 # Stage 0 - User has just joined CGH.
     # User is prompted to react on the menu to declare what group they are in (Student, Guest, etc.)
@@ -57,8 +45,6 @@ active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,
     # ALUM - User verified a valid email address OR otherwise proved they are an alum.
     # GUEST - User's guest pass request was approved.
     # PROSPECTIVE - User entered their full name.
-
-new_user_queue = []
 
 context = ssl.create_default_context()
 
@@ -94,6 +80,15 @@ def email_is_valid(supplied_email):
     if supplied_email.endswith("@g.holycross.edu"):
         return True
     return False
+
+
+async def session_cleanup(member):
+    global active_sessions
+    print("Channel deletion in 30 seconds.")
+    time.sleep(30)
+    await active_sessions[member][5].delete(reason="Verification session ended.")
+    print("Channel deleted.")
+    del active_sessions[member]
 
 
 async def guest_issue(member, approval):
@@ -137,18 +132,19 @@ async def new_input(member, u_input_str, u_input_react):
 
         await member_vs[4].edit(embed=get_embed_by_name("TEST"))
         await member_vs[4].clear_reactions()
+        await session_cleanup(member)
 
 
 async def new_session(member):
     global active_sessions
     # Used to initiate a verification session over DMs with a user.
     # We call this function whenever someone new joins CGH.
-    if member.dm_channel is None:
-        await member.create_dm()
     print("Starting new session...")
-    temp_message = await member.dm_channel.send(embed=get_embed_by_name("stage0"))
+    verify_channel = await cgh.create_verify_session_channel(member)
+    temp_message = await verify_channel.send(content=member.mention, embed=get_embed_by_name("stage0"))
+
     await temp_message.add_reaction("🟣")
     await temp_message.add_reaction("⚪")
     await temp_message.add_reaction("🟡")
     await temp_message.add_reaction("🔵")
-    active_sessions[member] = (0, "", "", "", temp_message)  # default instantiation
+    active_sessions[member] = (0, "", "", "", temp_message, verify_channel)  # default instantiation
