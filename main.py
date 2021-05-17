@@ -49,7 +49,6 @@ async def on_reaction_add(reaction, user):
     if user == bot.user:
         return
 
-
     if reaction.emoji == "\U0001f7e9":
         # Was it a green square?
         await cgh.verify_guest(reaction.message)
