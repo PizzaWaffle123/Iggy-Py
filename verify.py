@@ -1,3 +1,4 @@
+import csv
 import smtplib
 import ssl
 import random
