@@ -14,7 +14,6 @@ async def test(ctx, arg1):
     global command_counter
     command_counter += 1
     print("Heard test command!")
-    await ctx.send(arg1)
     if arg1 == "verify":
         await verify.new_session(ctx.author)
     elif arg1 == "react":
