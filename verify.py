@@ -20,7 +20,8 @@ em_stage0.description = "Before you can access the server, you'll need to verify
 em_stage0.colour = color_okay
 
 port = 465
-password = "dogxbxvpxhdwfyhj"
+f = open("email_password.txt", "r")
+password = f.read()
 email = "noreply.iggybot@gmail.com"
 message = """\
 Subject: Verification Code
