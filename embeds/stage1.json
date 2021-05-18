@@ -5,12 +5,12 @@
       "fields": [
         {
           "name": "-----------",
-          "value": "\uD83C\uDDE6 **2022**\n\uD83C\uDDE7 **2023**",
+          "value": "\uD83C\uDDE6 **{0}**\n\uD83C\uDDE7 **{1}**",
           "inline": true
         },
         {
           "name": "-----------",
-          "value": "\uD83C\uDDE8 **2024**\n\uD83C\uDDE9 **2025**",
+          "value": "\uD83C\uDDE8 **{0}**\n\uD83C\uDDE9 **{1}**",
           "inline": true
         }
       ]
