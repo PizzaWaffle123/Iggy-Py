@@ -4,12 +4,12 @@
       "color": 4171755,
       "fields": [
         {
-          "name": "━━━━━━━━━━━",
+          "name": "-----------",
           "value": ":red_circle: **No Access**",
           "inline": true
         },
         {
-          "name": "━━━━━━━━━━━",
+          "name": "-----------",
           "value": "**Year of Graduation**\n{}",
           "inline": true
         }
