@@ -65,6 +65,11 @@ def get_role_id_by_name(name):
         return None
 
 
+def get_role_obj_by_name(name):
+    global guild
+    return guild.get_role(get_role_id_by_name(name))
+
+
 def get_channel_obj_by_name(name):
     global guild
     return guild.get_channel(get_channel_id_by_name(name))
@@ -76,6 +81,7 @@ async def create_verify_session_channel(member):
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(read_messages=False),
         guild.me: discord.PermissionOverwrite(read_messages=True),
+        get_role_obj_by_name("eboard"): discord.PermissionOverwrite(read_messages=True),
         member: discord.PermissionOverwrite(read_messages=True)
     }
     channel_name = member.name + "-" + member.discriminator
