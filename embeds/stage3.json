@@ -1,0 +1,17 @@
+{
+      "title": "Input Verification Code",
+      "description": "You should have received an 8-digit security code to the email address you provided. Once you've received it, send it here.",
+      "color": 16295218,
+      "fields": [
+        {
+          "name": "━━━━━━━━━━━",
+          "value": "**EMAIL:**\nejfear21@g.holycross.edu",
+          "inline": true
+        },
+        {
+          "name": "━━━━━━━━━━━",
+          "value": ":arrows_counterclockwise: **Resend Code**\n:x: **Retype Email**",
+          "inline": true
+        }
+      ]
+    }

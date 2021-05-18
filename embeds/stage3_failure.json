@@ -1,0 +1,17 @@
+{
+      "title": "Invalid Verification Code",
+      "description": "Sorry, that doesn't look like the code we sent you. Please try typing the code again.\nYou can also use the options below to resend the code or retype your email.",
+      "color": 15158332,
+      "fields": [
+        {
+          "name": "━━━━━━━━━━━",
+          "value": "**EMAIL:**\nejfear21@g.holycross.edu",
+          "inline": true
+        },
+        {
+          "name": "━━━━━━━━━━━",
+          "value": ":arrows_counterclockwise: **Resend Code**\n:x: **Retype Email**",
+          "inline": true
+        }
+      ]
+    }

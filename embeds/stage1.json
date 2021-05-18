@@ -1,5 +1,17 @@
 {
-      "title": "TEST",
-      "description": "TEST - Stage 1",
-      "color": 4171755
+      "title": "Class Year Selection",
+      "description": "Please select your expected year of graduation - this should match the year in your Holy Cross email address.",
+      "color": 4171755,
+      "fields": [
+        {
+          "name": "━━━━━━━━━━━",
+          "value": ":regional_indicator_a: **2022**\n:regional_indicator_b: **2023**",
+          "inline": true
+        },
+        {
+          "name": "━━━━━━━━━━━",
+          "value": ":regional_indicator_c: **2024**\n:regional_indicator_d: **2025**",
+          "inline": true
+        }
+      ]
     }
