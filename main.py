@@ -41,38 +41,28 @@ async def on_user_update(before, after):
 @bot.event
 async def on_reaction_add(reaction, user):
     # This event happens whenever a reaction gets added to a message the bot can see.
-    print("Heard a reaction added!")
-    print(reaction.emoji)
-    if reaction.message not in cgh.guest_requests.keys():
-        await verify.new_input(user, None, reaction)
-        return
+    await verify.new_input(user, None, reaction, reaction.message.channel, reaction.message)
     if user == bot.user:
         return
 
+    print("Checking to validate a guest pass or alum request...")
     if reaction.emoji == "\U0001f7e9":
         # Was it a green square?
-        await cgh.verify_guest(reaction.message)
-        relevant_user = cgh.guest_requests[reaction.message]
-        await verify.guest_issue(relevant_user, True)
-        del cgh.guest_requests[reaction.message]
-        embed_to_edit = reaction.message.embeds[0]
-        embed_to_edit.title = "Guest Pass Approved"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Approved By", value="%s#%s" % (user.name, user.discriminator), inline=False)
-        embed_to_edit.colour = discord.Colour(3066993)
-        await reaction.message.edit(embed=embed_to_edit)
+        if reaction.message in cgh.guest_requests.keys():
+            await cgh.verify_guest(reaction.message, True, user)
+        elif reaction.message in cgh.alum_requests.keys():
+            await cgh.verify_alum(reaction.message, True, user)
+        else:
+            return
 
     elif reaction.emoji == "\U0001f7e5":
         # How about a red square?
-        relevant_user = cgh.guest_requests[reaction.message]
-        await verify.guest_issue(relevant_user, False)
-        del cgh.guest_requests[reaction.message]
-        embed_to_edit = reaction.message.embeds[0]
-        embed_to_edit.title = "Guest Pass Denied"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Denied By", value="%s#%s" % (user.name, user.discriminator), inline=False)
-        embed_to_edit.colour = discord.Colour(15158332)
-        await reaction.message.edit(embed=embed_to_edit)
+        if reaction.message in cgh.guest_requests.keys():
+            await cgh.verify_guest(reaction.message, False, user)
+        elif reaction.message in cgh.alum_requests.keys():
+            await cgh.verify_alum(reaction.message, False, user)
+        else:
+            return
 
     else:
         # We can ignore it
@@ -98,18 +88,11 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # If the message is sent in a DM channel, do a verification thing.
-    if isinstance(message.channel, discord.DMChannel):
-        results = await verify.new_input(message.author, message.content, None)
-        if results[0] == 2:
-            await cgh.verify_user(message.author, results[1])
-        elif results[0] == 3:
-            await cgh.notify_of_guest(message.author)
-        elif results[0] == 4:
-            await cgh.verify_guest(message.author)
+    # If the message was unrelated to verification, this will do nothing.
+    await verify.new_input(message.author, message.content, None, message.channel, message)
 
     # If the message is a published webhook, bullhorn it!
-    elif message.channel.id == 840674330479689758 and message.webhook_id != 0:
+    if message.channel.id == 840674330479689758 and message.webhook_id != 0:
         # We received a published announcement and confirmed it was a webhook!
         print("Heard a published announcement!")
         await cgh.bullhorn_send(message)
