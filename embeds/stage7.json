@@ -1,0 +1,17 @@
+{
+      "title": "Email Access",
+      "description": "In order to verify your status as a former student, please enter your Holy Cross student email address. If you have no access to your Holy Cross email account, or if you were never issued one, please react with the red circle. \n\n*NOTE: This will initiate a manual review of your status as a former student, which may take up to 48 hours.*",
+      "color": 4171755,
+      "fields": [
+        {
+          "name": "━━━━━━━━━━━",
+          "value": ":red_circle: **No Access**",
+          "inline": true
+        },
+        {
+          "name": "━━━━━━━━━━━",
+          "value": "**Year of Graduation**\n{}",
+          "inline": true
+        }
+      ]
+    }
