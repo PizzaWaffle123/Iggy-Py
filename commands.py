@@ -66,8 +66,15 @@ async def graduate(ctx):
     await ctx.send("Graduated Seniors: %d" % sen_count)
 
 
+@commands.command()
+async def embed(ctx, arg1):
+    embed_to_print = verify.get_embed_by_name(arg1)
+    await ctx.send(embed=embed_to_print)
+
+
 def setup(bot):
     bot.add_command(test)
     bot.add_command(count)
     bot.add_command(stats)
     bot.add_command(graduate)
+    bot.add_command(embed)
