@@ -26,6 +26,9 @@ async def test(ctx, arg1):
     elif arg1 == "graduate":
         sen_count = await cgh.count_seniors(str(datetime.now().year))
         await ctx.send("Eligible Seniors: %d" % sen_count)
+    elif arg1 == "emailparse":
+        myembed = verify.get_embed_by_name("stage3", "ejfear21@g.holycross.edu")
+        await ctx.send(embed=myembed)
 
 
 @commands.command()
@@ -68,7 +71,7 @@ async def graduate(ctx):
 
 @commands.command()
 async def embed(ctx, arg1):
-    embed_to_print = verify.get_embed_by_name(arg1)
+    embed_to_print = verify.get_embed_by_name(arg1, "TestData")
     await ctx.send(embed=embed_to_print)
 
 
