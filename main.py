@@ -13,6 +13,7 @@ async def on_ready():
     print('Logged on as {0}!'.format(bot.user))
     cgh.setup(bot.guilds[0])
     bot.load_extension('commands')
+    await cgh.get_channel_obj_by_name("server_work").send(embed=verify.get_embed_by_name("changelog", "TestData"))
 
 
 @bot.event

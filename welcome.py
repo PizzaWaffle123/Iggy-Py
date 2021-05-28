@@ -24,12 +24,19 @@ welcome_titles = [
     "PRESS ANY KEY TO CONTINUE",
     "A NEW GAMER ENTERS THE GAMER ZONE",
     "SO, YOU WANT TO HEAR ANOTHER STORY, EH?",
-    "NOW ABOUT THAT BEER I OWED YA!"
+    "NOW ABOUT THAT BEER I OWED YA!",
+    "YOU ARE NOW ON THE PURPLE TEAM",
+    "A NEW FIGHTER HAS JOINED THE BATTLE",
+    "HEY - YOU'RE FINALLY AWAKE",
+    "SO - WHO'S READY TO MAKE SOME SCIENCE?",
+    "KIROV REPORTING",
+    "AIN'T THAT A KICK IN THE HEAD"
 ]
 
 # Note: Anywhere that {count} is shown will be formatted out to include the count parameter in the get_welcome_embed
 # function. {count} will only get formatted as the number itself, it WILL NOT become ordinal (1st, 2nd, 3rd, etc.).
 # If you add any new bodies, you do not need to include {count}.
+# UPDATE 25 MAY 2021 - The formatter {ordinal} is now supported.
 welcome_bodies = [
     "Say \"hi\" to number {count}!",
     "Now the server's at {count} members!",

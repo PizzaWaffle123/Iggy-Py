@@ -75,9 +75,24 @@ async def embed(ctx, arg1):
     await ctx.send(embed=embed_to_print)
 
 
+@commands.command()
+async def button(ctx):
+    print("Testing button...")
+    test_button = discord.ui.Button(style=1, label="Test Label")
+    test_button_2 = discord.ui.Button(style=2, label="Test Label 2")
+    test_button_3 = discord.ui.Button(style=3, label="Test Label 3")
+    test_view = discord.ui.View()
+    test_view.add_item(test_button)
+    test_view.add_item(test_button_2)
+    test_view.add_item(test_button_3)
+
+    await ctx.send(content="Test Content!", view=test_view)
+
+
 def setup(bot):
     bot.add_command(test)
     bot.add_command(count)
     bot.add_command(stats)
     bot.add_command(graduate)
     bot.add_command(embed)
+    bot.add_command(button)
