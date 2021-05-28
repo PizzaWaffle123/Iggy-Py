@@ -1,0 +1,38 @@
+{
+      "title": "Version 3.0",
+      "description": "Thanks for using IggyBot! You are currently using **Version 3.0**, which was completed on **31 May 2021.** New features are below!",
+      "color": 8026746,
+      "fields": [
+        {
+          "name": "Revamped Verification Flow",
+          "value": "The user verification system has been completely redone. New visitors to the Crusader Gaming Hub will now verify in custom, private verification channels in the server itself - previously, this took place in the user's DMs.\n\nThe actual verification system itself has been replaced with live-updating embeds, to make the process much more seamless and less cluttered. \n\nOnce a user's verification session is complete, their verification channel will be automatically deleted. This way, you can see at a glance how many verification \"sessions\" are currently active. All E-Board members also have access ot these verification channels, so if a user gets stuck, you can swoop in to help them!"
+        },
+        {
+          "name": "Additional Verification Features",
+          "value": "After much deliberation, and as part of our full verification rewrite, IggyBot now supports verification for Current Students, Former Students, Prospective/Incoming Students, and Guests. \n\nCurrent Students will verify using a college email address. Former Students may verify with their college email address if they have access to it - otherwise, they may request manual verification from the moderators. Prospective Students and Guests will require manual verification. \n\nRequests for manual verification will be sent in the Member Log."
+        },
+        {
+          "name": "Bullhorn Mode",
+          "value": "Bullhorn Mode was introduced in an earlier version, but has since been spruced up and bugproofed. Bullhorn Mode allows announcements to be sent via DM to \"subscribed\" users (i.e. those with the Bullhorn Mode role). To send an announcement through the Bullhorn, simply ` Publish ` it by right-clicking the message."
+        },
+        {
+          "name": "Code Improvements",
+          "value": "The raw code of Iggy has been improved greatly to allow for enhanced modularity and additonal security. Future modifications of Iggy should be much easier."
+        },
+        {
+          "name": "New Commands",
+          "value": "` $test verify ` - Tests the verification flow.\n` $test graduate ` - Tests the graduation function.\n` $count ` - Produces the number of Crusader or E-Board members in the server.\n` $graduate ` - Takes all users whose class year is equal to the current year and marks them as Alumni.\n` $embed [name] ` - Produces the embed specified, provided it exists in Iggy's directory."
+        },
+        {
+          "name": "Updated User Icon",
+          "value": "Iggy's profile picture has been updated to match Discord's rebranding!"
+        },
+        {
+          "name": "New Welcome Messages",
+          "value": "Added [8] new titles and [2] new bodies that can generate in Welcome messages."
+        }
+      ],
+      "author": {
+        "name": "IggyBot Changelog"
+      }
+    }
