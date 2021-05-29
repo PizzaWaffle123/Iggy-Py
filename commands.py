@@ -81,10 +81,14 @@ async def button(ctx):
     test_button = discord.ui.Button(style=1, label="Test Label")
     test_button_2 = discord.ui.Button(style=2, label="Test Label 2")
     test_button_3 = discord.ui.Button(style=3, label="Test Label 3")
+    test_button_4 = discord.ui.Button(style=4, label="Test Label 4", custom_id="TestID-12345")
+    test_button_4.callback = button_test
+
     test_view = discord.ui.View()
     test_view.add_item(test_button)
     test_view.add_item(test_button_2)
     test_view.add_item(test_button_3)
+    test_view.add_item(test_button_4)
 
     await ctx.send(content="Test Content!", view=test_view)
 
@@ -96,3 +100,10 @@ def setup(bot):
     bot.add_command(graduate)
     bot.add_command(embed)
     bot.add_command(button)
+
+
+async def button_test(interaction):
+    print(interaction)
+    print(interaction.data['custom_id'])
+    await interaction.response.edit_message(content=interaction.data['custom_id'])
+

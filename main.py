@@ -42,32 +42,9 @@ async def on_user_update(before, after):
 @bot.event
 async def on_reaction_add(reaction, user):
     # This event happens whenever a reaction gets added to a message the bot can see.
-    await verify.new_input(user, None, reaction, reaction.message.channel, reaction.message)
     if user == bot.user:
         return
-
-    print("Checking to validate a guest pass or alum request...")
-    if reaction.emoji == "\U0001f7e9":
-        # Was it a green square?
-        if reaction.message in cgh.guest_requests.keys():
-            await cgh.verify_guest(reaction.message, True, user)
-        elif reaction.message in cgh.alum_requests.keys():
-            await cgh.verify_alum(reaction.message, True, user)
-        else:
-            return
-
-    elif reaction.emoji == "\U0001f7e5":
-        # How about a red square?
-        if reaction.message in cgh.guest_requests.keys():
-            await cgh.verify_guest(reaction.message, False, user)
-        elif reaction.message in cgh.alum_requests.keys():
-            await cgh.verify_alum(reaction.message, False, user)
-        else:
-            return
-
-    else:
-        # We can ignore it
-        return
+    await verify.new_input(user, None, reaction, reaction.message.channel, reaction.message)
 
 
 @bot.event

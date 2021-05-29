@@ -49,11 +49,11 @@ active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,
 
 context = ssl.create_default_context()
 
-year_senior = "2021"
-year_junior = "2022"
-year_sophomore = "2023"
-year_freshman = "2024"
-year_prospective = "2025"
+year_senior = "2022"
+year_junior = "2023"
+year_sophomore = "2024"
+year_freshman = "2025"
+year_prospective = "2026"
 
 
 def get_embed_by_name(name, info):
@@ -199,7 +199,7 @@ async def new_input(member, u_input_str, u_input_react, origin_channel, raw_mess
             active_sessions[member] = (4, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
             await active_sessions[member][4].edit(embed=get_embed_by_name("stage4", "null"))
             await member_vs[4].clear_reactions()
-            await cgh.notify_of_guest(member)
+            await cgh.generate_verify_request(member, "guest", "Test", "I am testing a Guest Pass!")
         elif u_input_react.emoji == "🟡":
             # Yellow Circle - PROSPECTIVE
             print("Prospective!")

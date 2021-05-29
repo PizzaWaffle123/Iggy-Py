@@ -9,8 +9,7 @@ import welcome
 guild = None
 roles = {}
 channels = {}
-guest_requests = {}
-alum_requests = {}
+requests = {}
 
 
 def setup(myguild):
@@ -239,117 +238,109 @@ async def count_seniors(gradyear):
     return grad_counter
 
 
-async def notify_of_guest(user):
+async def generate_verify_request(requester, group, fullname, info):
+    # If group is guest, info will be a reason for joining.
+    # If group is alum, info will be year of graduation.
+    # If group is prosp, info will be ignored.
     global guild
-    global guest_requests
+    global requests
+    global channels
 
-    # Creates dynamic Guest Pass embed usable by moderators.
-    guest_request = discord.Embed()
-    guest_request.title = "Guest Pass Requested"
-    guest_request.set_thumbnail(url=user.avatar_url)
-    guest_request.description = "\U0001f7e9 Approve\n" \
-                                "\U0001f7e5 Deny"
-    guest_request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    guest_request.colour = discord.Colour(12042958)
-    sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=guest_request)
-    await sent_message.add_reaction("\U0001f7e9")  # green square
-    await sent_message.add_reaction("\U0001f7e5")  # red square
-    guest_requests[sent_message] = user
+    request_embed = discord.Embed()
+    request_embed.set_thumbnail(url=requester.avatar)
+    request_embed.add_field(name="Username", value="%s#%s" % (requester.name, requester.discriminator), inline=False)
+    request_embed.add_field(name="Full Name", value=fullname, inline=False)
+    request_embed.colour = discord.Colour(12042958)
+
+    if group == "guest":
+        request_embed.title = "Request - Guest Pass"
+        request_embed.description = "**Reason For Request**\n" + info
+    elif group == "alum":
+        request_embed.title = "Request - Alum Verification"
+        request_embed.description = "**Class Year**\n" + info
+    elif group == "prosp":
+        request_embed.title = "Request - Accepted Student"
+        request_embed.description = "This student does not yet have a valid Holy Cross email address!"
+    else:
+        request_embed.title = "Request - Generic"
+        request_embed.description = "Something has gone wrong here. Please ask the bot maintainer to check the code."
+
+    request_approval_buttons = discord.ui.View()
+    request_btn_approve = discord.ui.Button(label="Approve", style=3)
+    request_btn_approve.callback = handle_approval
+
+    request_btn_deny = discord.ui.Button(label="Deny", style=4)
+    request_btn_deny.callback = handle_deny
+
+    request_approval_buttons.add_item(request_btn_approve)
+    request_approval_buttons.add_item(request_btn_deny)
+
+    sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=request_embed,
+                                                                             view=request_approval_buttons)
+
+    requests[sent_message] = (requester, group, info)
 
 
-async def notify_of_alum(user, name, year):
+async def handle_approval(interact):
     global guild
-    global alum_requests
-
-    # Creates dynamic Alum Request embed usable by moderators.
-    request = discord.Embed()
-    request.title = "Manual Alumnus/Alumna Verification"
-    request.set_thumbnail(url=user.avatar_url)
-    request.description = "\U0001f7e9 Approve\n" \
-                                "\U0001f7e5 Deny"
-    request.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    request.add_field(name="Full Name", value=name, inline=False)
-    request.add_field(name="Class Year", value=year, inline=False)
-    request.colour = discord.Colour(12042958)
-    sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=request)
-    await sent_message.add_reaction("\U0001f7e9")  # green square
-    await sent_message.add_reaction("\U0001f7e5")  # red square
-    alum_requests[sent_message] = user
-    print(alum_requests)
-
-
-async def verify_guest(message, status, verifier):
-    # Used to "approve" a Guest Pass.
-    global guild
+    global requests
     global roles
-    global guest_requests
-
-    if message not in guest_requests.keys():
-        return
-    user = guest_requests[message]
-    member = guild.get_member(user_id=user.id)
-    if member is None:
+    interaction_message = interact.message
+    embed_to_edit = interaction_message.embeds[0]
+    user_tuple = requests[interaction_message]
+    if user_tuple is None:
+        await interact.response.send_message(content="This request didn't work. Please try again later!", ephemeral=True)
         return
 
-    if status is True:
-        if guild.get_role(roles["pending"]) in member.roles:
-            await member.remove_roles(guild.get_role(roles["pending"]))
+    embed_to_edit.set_author(name="Approved!")
+    embed_to_edit.add_field(name="Approved By", value="%s#%s" % (interact.user.name, interact.user.discriminator),
+                            inline=False)
+    embed_to_edit.colour = discord.Colour(3066993)
+
+    await interact.response.edit_message(embed=embed_to_edit, view=None)
+    member = user_tuple[0]
+    await member.remove_roles(guild.get_role(roles["pending"]))
+    if user_tuple[1] == "guest":
         await member.add_roles(guild.get_role(roles["guest"]))
-        embed_to_edit = message.embeds[0]
-        embed_to_edit.title = "Guest Pass Approved"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Approved By", value="%s#%s" % (verifier.name, verifier.discriminator),
-                                inline=False)
-        embed_to_edit.colour = discord.Colour(3066993)
-        await message.edit(embed=embed_to_edit)
         await verify.guest_issue(member, True)
-    else:
-        embed_to_edit = message.embeds[0]
-        embed_to_edit.title = "Guest Pass Denied"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Denied By", value="%s#%s" % (verifier.name, verifier.discriminator),
-                                inline=False)
-        embed_to_edit.colour = discord.Colour(15158332)
-        await message.edit(embed=embed_to_edit)
-        await verify.guest_issue(member, False)
-    del guest_requests[message]
-
-
-async def verify_alum(message, status, verifier):
-    # Used to "approve" an Alum request.
-    global guild
-    global roles
-    global alum_requests
-
-    if message not in alum_requests.keys():
-        return
-    user = alum_requests[message]
-    member = guild.get_member(user_id=user.id)
-    if member is None:
-        return
-    if status is True:
-        if guild.get_role(roles["pending"]) in member.roles:
-            await member.remove_roles(guild.get_role(roles["pending"]))
-        await member.add_roles(guild.get_role(roles["crusader"]))
-        await member.add_roles(guild.get_role(roles["alumni"]))
-        embed_to_edit = message.embeds[0]
-        embed_to_edit.title = "Alumnus/Alumna Request Approved"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Approved By", value="%s#%s" % (verifier.name, verifier.discriminator),
-                                inline=False)
-        embed_to_edit.colour = discord.Colour(3066993)
-        await message.edit(embed=embed_to_edit)
+    elif user_tuple[1] == "alum":
+        await member.add_roles(guild.get_role(roles["alum"]))
         await verify.alum_verify(member, True)
-    else:
-        embed_to_edit = message.embeds[0]
-        embed_to_edit.title = "Alumnus/Alumna Request Denied"
-        embed_to_edit.description = ""
-        embed_to_edit.add_field(name="Denied By", value="%s#%s" % (verifier.name, verifier.discriminator),
-                                inline=False)
-        embed_to_edit.colour = discord.Colour(15158332)
-        await message.edit(embed=embed_to_edit)
+    elif user_tuple[1] == "prosp":
+        await member.add_roles(guild.get_role(roles["prospective"]))
+        await member.add_roles(guild.get_role(roles[verify.year_prospective]))
+    del requests[interaction_message]
+
+
+async def handle_deny(interact):
+    global guild
+    global requests
+    global roles
+    interaction_message = interact.message
+    embed_to_edit = interaction_message.embeds[0]
+    user_tuple = requests[interaction_message]
+    if user_tuple is None:
+        await interact.response.send_message(content="This request didn't work. Please try again later!",
+                                             ephemeral=True)
+        return
+
+    embed_to_edit.set_author(name="Denied!")
+    embed_to_edit.add_field(name="Denied By", value="%s#%s" % (interact.user.name, interact.user.discriminator),
+                            inline=False)
+    embed_to_edit.colour = discord.Colour(15158332)
+
+    await interact.response.edit_message(embed=embed_to_edit, view=None)
+    member = guild.get_member(user_tuple[0])
+
+    if user_tuple[1] == "guest":
+        await verify.guest_issue(member, False)
+    elif user_tuple[1] == "alum":
         await verify.alum_verify(member, False)
-    del alum_requests[message]
+    elif user_tuple[1] == "prosp":
+        # TODO
+        pass
+
+    del requests[interaction_message]
 
 
 async def user_left(member):
