@@ -1,5 +1,6 @@
 # VERSION 3.0 UPGRADE PROJECT
 # STATUS: IN PROGRESS
+import time
 
 from discord.ext import commands
 from datetime import datetime
@@ -10,6 +11,8 @@ import requests
 import polls
 import json as json
 import os
+
+import welcome
 
 my_bot = None
 
@@ -24,7 +27,13 @@ async def handle(interaction, bot):
     if interaction.data["name"] == "test":
         if interaction.data["options"][0]["value"] == "verify":
             await verify.new_session(interaction.user)
-        await interaction.followup.send(content="Test command used!")
+            await interaction.followup.send(content="Test command used!")
+        elif interaction.data["options"][0]["value"] == "welcome":
+            resp_embed = welcome.get_welcome_embed(interaction.user)
+            await interaction.followup.send(embed=resp_embed)
+        elif interaction.data["options"][0]["value"] == "graduate":
+            sen_count = await cgh.count_seniors(str(datetime.now().year))
+            await interaction.followup.send("Eligible Seniors: %d" % sen_count)
     elif interaction.data["name"] == "embed":
         arg1 = interaction.data["options"][0]["value"]
         embed_to_print = verify.get_embed_by_name(arg1, "TestData")
@@ -33,6 +42,9 @@ async def handle(interaction, bot):
         else:
             await interaction.followup.send("Embed found! Printing...")
             await interaction.channel.send(embed=embed_to_print)
+    elif interaction.data["name"] == "changelog":
+        embed_to_print = verify.get_embed_by_name("changelog", None)
+        await interaction.followup.send(embed=embed_to_print)
     elif interaction.data["name"] == "poll":
         interaction_info = interaction.data["options"][0]
         if interaction_info["name"] == "create":
@@ -128,6 +140,7 @@ async def embed(ctx, arg1):
 @commands.command()
 async def csetup(ctx):
     # Runs registration of slash commands.
+    await ctx.send(content="Attemtping to register slash commands...")
     f = open("token.txt", "r")
     bot_token = f.read()
     url = "https://discord.com/api/v9/applications/771800207733686284/guilds/432940415432261653/commands"
@@ -136,14 +149,33 @@ async def csetup(ctx):
     }
 
     command_directory = "./commands"
+    command_queue = []
     for file in os.listdir(command_directory):
         print(file)
         file = "commands/" + file
-        with open(file) as jsonfile:
-            data = json.load(jsonfile)
-            r = requests.post(url, headers=headers, json=data)
-            print("Received Status Code: %d" % r.status_code)
-            print(r.content)
+        command_queue.append(file)
+
+    while command_queue:
+        print("Current Command Queue:")
+        print(command_queue)
+        rate_limit_time = 4
+        for file in command_queue:
+            with open(file) as jsonfile:
+                data = json.load(jsonfile)
+                r = requests.post(url, headers=headers, json=data)
+                print("Received Status Code: %d" % r.status_code)
+                if r.status_code in [200, 201]:
+                    command_queue.remove(file)
+                    print("Added command successfully!")
+                    await ctx.send(content="Added command: %s" % file)
+                if r.status_code == 429:
+                    # We are being rate limited.
+                    rate_limit_dict = json.loads(r.content)
+                    print(r.content)
+                    rate_limit_time = float(rate_limit_dict["retry_after"])
+        time.sleep(int(rate_limit_time) + 1)
+
+    await ctx.send(content="Added all commands!")
 
     with open("./config/permissions.json") as permfile:
         data = json.load(permfile)
