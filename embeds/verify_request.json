@@ -1,0 +1,25 @@
+{
+      "author": {
+        "name": "Pending"
+      },
+      "title": "Verification Request",
+      "description": "The following user is requesting verification.",
+      "fields": [
+        {
+          "name": "Username",
+          "value": "{username}",
+          "inline": true
+        },
+        {
+          "name": "Group",
+          "value": "{friendly_group}",
+          "inline": true
+        },
+        {
+          "name": "{infotitle}",
+          "value": "{info}",
+          "inline": true
+        }
+      ],
+      "color": 16295218
+    }

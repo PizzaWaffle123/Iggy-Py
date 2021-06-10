@@ -1,0 +1,20 @@
+{
+      "author": {
+        "name": "Manual Verification Pending"
+      },
+      "title": "Your request for manual verification is now pending.",
+      "description": "It may take up to 48 hours to receive a decision. You will be updated as soon as the server staff has approved or denied your request.\nFor reference, here's the information you submitted:",
+      "color": 16295218,
+      "fields": [
+        {
+          "name": "FULL NAME",
+          "value": "{fullname}",
+          "inline": true
+        },
+        {
+          "name": "CLASS YEAR",
+          "value": "{classyear}",
+          "inline": true
+        }
+      ]
+    }
