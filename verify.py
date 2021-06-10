@@ -1,9 +1,12 @@
+import asyncio
 import os
 
 import smtplib
 import ssl
 import random
+import threading
 from datetime import datetime
+from discord.ext import tasks
 import time
 
 import discord
@@ -40,6 +43,7 @@ class VerifySession:
         self.menu_message = None
         self.classyear = 0
         self.group = ""  # can be current, former, guest, or prosp
+        self.stage = 0
 
 
 context = ssl.create_default_context()
@@ -56,60 +60,17 @@ year_prospective = year_senior + 4
 
 
 def get_embed_by_name(name, info):
-    rawname = name
+    # Info is a dictionary in key:value form
     name = "embeds/" + name + ".json"
     if not os.path.isfile(name):
         return None
     with open(name) as jsonfile:
         data = json.load(jsonfile)
-    if rawname == "stage3" or rawname == "stage8":
-        data = parse_email_into_embed(data, info)
-    if rawname == "stage1":
-        data = parse_active_years(data)
-    if rawname == "stage6":
-        data = parse_alum_years(data)
-    if rawname == "stage7":
-        data = parse_gradyear_into_embed(data, info)
+
+    if "fields" in data.keys() and info is not None:
+        for field in data["fields"]:
+            field["value"] = field["value"].format(**info)
     return discord.Embed.from_dict(data)
-
-
-def parse_email_into_embed(data, student_email):
-    string_to_parse = data["fields"][0]["value"]
-    string_to_parse = string_to_parse.format(student_email)
-    data["fields"][0]["value"] = string_to_parse
-    return data
-
-
-def parse_gradyear_into_embed(data, gradyear):
-    string_to_parse = data["fields"][1]["value"]
-    string_to_parse = string_to_parse.format(gradyear)
-    data["fields"][1]["value"] = string_to_parse
-    return data
-
-
-def parse_active_years(data):
-    upperclass = data["fields"][0]["value"]
-    underclass = data["fields"][1]["value"]
-
-    upperclass = upperclass.format(year_senior, year_junior)
-    underclass = underclass.format(year_sophomore, year_freshman)
-
-    data["fields"][0]["value"] = upperclass
-    data["fields"][1]["value"] = underclass
-    return data
-
-
-def parse_alum_years(data):
-    senior_num = int(year_senior)
-    leftside = data["fields"][0]["value"]
-    rightside = data["fields"][1]["value"]
-
-    leftside = leftside.format(senior_num-1, senior_num-2, senior_num-3)
-    rightside = rightside.format(senior_num-4, senior_num-5, senior_num-6)
-
-    data["fields"][0]["value"] = leftside
-    data["fields"][1]["value"] = rightside
-    return data
 
 
 def send_code(user_email, code):
@@ -140,11 +101,10 @@ def email_is_valid(supplied_email):
 
 async def session_cleanup(member):
     global active_sessions
-    print("Channel deletion in 30 seconds.")
-    await active_sessions[member][5].send(content=member.mention + "\nYour verification session has concluded. This "
-                                                                   "channel will automatically delete in 30 seconds.")
-    time.sleep(30)
-    await active_sessions[member][5].delete(reason="Verification session ended.")
+    print("Channel deletion is scheduled.")
+    await asyncio.sleep(30)
+    print("Channel deletion is occurring.")
+    await active_sessions[member].channel.delete(reason="Verification session ended.")
     print("Channel deleted.")
     del active_sessions[member]
 
@@ -185,13 +145,15 @@ async def handle_interaction(interaction):
     # There may be additional data attached by underscore, depending on stage.
 
     stage = int(data_pieces[0])
+    active_sessions[member].stage = stage
     active_sessions[member].group = data_pieces[1]
 
     resp_embed = get_embed_by_name("%s_%s" % (data_pieces[0], data_pieces[1]), "Null")
 
-    if stage == 3:
+    if stage == 3 and active_sessions[member].classyear == 0:
         active_sessions[member].classyear = int(data_pieces[2])
         # If we're going to stage 3, then the user has just selected their class year.
+        # We could also be entering stage 3 due to a re-enter request, in which case there's no year to parse.
 
     resp_view = discord.ui.View()
 
@@ -237,232 +199,93 @@ async def handle_interaction(interaction):
     await interaction.response.edit_message(embed=resp_embed, view=resp_view)
 
 
-async def new_input(member, u_input_str, u_input_react, origin_channel, raw_message):
+async def new_input(member, u_input_str, origin_channel, raw_message):
     global active_sessions
-    # Returns a Tuple (user stage, response info)
-    # This function happens whenever a user reacts or says something in the DM channel.
-    # u_input_str is whatever the user typed, u_input_react is the Reaction event if applicable.
-    # either of these values can be None, but one must always be non-None.
+    global my_bot
     if member not in active_sessions.keys():
-        return -1
-    member_vs = active_sessions[member]  # vs stands for "verify state", see above
-    if u_input_react is None and u_input_str is None:
-        # We should...never be here. Time to panic.
-        return -1
-    if origin_channel != member_vs[5]:
-        return -1
+        # Is the member actually getting verified?
+        # If not, ignore it.
+        return
+    member_vs = active_sessions[member]  # The member is getting verified, pull their session.
 
-    if member_vs[0] == 0:
-        # User has picked their group.
-        if u_input_react.emoji == "🟣":
-            # Purple Circle - STUDENT
-            print("Student!")
-            active_sessions[member] = (1, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage1", "null"))
-            await member_vs[4].clear_reactions()
+    if origin_channel != member_vs.channel:
+        # Was the message actually sent in their verification channel?
+        # If not, ignore it.
+        return
 
-            await member_vs[4].add_reaction("🇦")
-            await member_vs[4].add_reaction("🇧")
-            await member_vs[4].add_reaction("🇨")
-            await member_vs[4].add_reaction("🇩")
-        elif u_input_react.emoji == "⚪":
-            # White Circle - GUEST
-            print("Guest!")
-            active_sessions[member] = (4, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage4", "null"))
-            await member_vs[4].clear_reactions()
-            await cgh.generate_verify_request(member, "guest", "Test", "I am testing a Guest Pass!")
-        elif u_input_react.emoji == "🟡":
-            # Yellow Circle - PROSPECTIVE
-            print("Prospective!")
-            active_sessions[member] = (5, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage5", "null"))
-            await member_vs[4].clear_reactions()
-        elif u_input_react.emoji == "🔵":
-            # Blue Circle - ALUM
-            print("Alum!")
-            active_sessions[member] = (6, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage6", "null"))
-            await member_vs[4].clear_reactions()
+    resp_embed = discord.Embed()
+    resp_view = discord.ui.View()
+    resp_view.timeout = None
+    if member_vs.group == "current":
+        # The member is verifying as a current student.
+        if member_vs.stage not in [3, 4]:
+            # Is the member in a stage that actually expects text input?
+            # If not, ignore their input.
+            return
 
-            await member_vs[4].add_reaction("🇦")
-            await member_vs[4].add_reaction("🇧")
-            await member_vs[4].add_reaction("🇨")
-            await member_vs[4].add_reaction("🇩")
-            await member_vs[4].add_reaction("🇪")
-            await member_vs[4].add_reaction("🇫")
-        else:
-            return -1
-    elif member_vs[0] == 1:
-        # User has picked their class year.
-        if u_input_react.emoji == "🇦":
-            active_sessions[member] = (2, member_vs[1], member_vs[2], year_senior, member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage2", "null"))
-            await member_vs[4].clear_reactions()
-        elif u_input_react.emoji == "🇧":
-            active_sessions[member] = (2, member_vs[1], member_vs[2], year_junior, member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage2", "null"))
-            await member_vs[4].clear_reactions()
-        elif u_input_react.emoji == "🇨":
-            active_sessions[member] = (2, member_vs[1], member_vs[2], year_sophomore, member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage2", "null"))
-            await member_vs[4].clear_reactions()
-        elif u_input_react.emoji == "🇩":
-            active_sessions[member] = (2, member_vs[1], member_vs[2], year_freshman, member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage2", "null"))
-            await member_vs[4].clear_reactions()
-        else:
-            return -1
-    elif member_vs[0] == 2:
-        # User has entered an email address.
-        if u_input_str is None:
-            return -1
-        await raw_message.delete()
-        if not email_is_valid(u_input_str):
-            return -1
-        user_email = u_input_str
-        code = random_code(8)
-        send_code(user_email, code)
-        active_sessions[member] = (3, code, user_email, member_vs[3], member_vs[4], member_vs[5])
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage3", user_email))
-        await member_vs[4].clear_reactions()
-        await member_vs[4].add_reaction("🔄")
-        await member_vs[4].add_reaction("❌")
-    elif member_vs[0] == 3:
-        # User has EITHER input a verification code or used a reaction.
-        if u_input_str is None:
-            # This means the input was a reaction.
-            if u_input_react.emoji == "🔄":
-                # User requested code to be resent.
-                code = random_code(8)
-                send_code(member_vs[2], code)
-                active_sessions[member] = (member_vs[0], code, member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage3", member_vs[2]))
-                await member_vs[4].clear_reactions()
-                await member_vs[4].add_reaction("🔄")
-                await member_vs[4].add_reaction("❌")
-            elif u_input_react.emoji == "❌":
-                # User requested to re-enter their email address.
-                active_sessions[member] = (2, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage2", "null"))
-                await member_vs[4].clear_reactions()
-        elif u_input_react is None:
-            # The input was a string.
-            real_code = member_vs[1]
-            entered_code = u_input_str
-            await raw_message.delete()
-            if real_code != entered_code:
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage3_failure", member_vs[2]))
+        if member_vs.stage == 3:
+            # The user should have entered their email.
+            if email_is_valid(u_input_str):
+                # The email address is valid.
+                member_vs.email = u_input_str
+                member_vs.code = random_code(8)
+                send_code(member_vs.email, member_vs.code)
+                member_vs.stage = 4
+                resp_embed = get_embed_by_name("4_current", {"email": member_vs.email})
+
+                resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
+                                                  style=discord.ButtonStyle.grey)
+                resend_button.callback = handle_interaction
+
+                reenter_button = discord.ui.Button(label="Re-enter Email", custom_id="verify_3_current",
+                                                   style=discord.ButtonStyle.red)
+                reenter_button.callback = handle_interaction
+
+                resp_view.add_item(resend_button)
+                resp_view.add_item(reenter_button)
+                my_bot.add_view(resp_view)
             else:
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_student", member_vs[2]))
-                await member_vs[4].clear_reactions()
-                await cgh.verify_user(member, member_vs[2], member_vs[3])
-                await session_cleanup(member)
-        else:
-            return -1
-    elif member_vs[0] == 5:
-        # User should have entered their full name.
-        if u_input_str is None:
-            return -1
-        full_name = u_input_str
-        await raw_message.delete()
-        await cgh.log_prospective(member, full_name, year_prospective)
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_prospective", member_vs[2]))
-        await session_cleanup(member)
-    elif member_vs[0] == 6:
-        # User selected an alum graduation year or entered one.
+                # Bad email address!
+                pass
+        elif member_vs.stage == 4:
+            # The user should have entered their verification code.
+            if member_vs.code != u_input_str:
+                # The code entered was invalid.
+                resp_embed = get_embed_by_name("4_current_badcode", {"email": member_vs.email})
+                resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
+                                                  style=discord.ButtonStyle.grey)
+                resend_button.callback = handle_interaction
 
-        grad_year = "1"
+                reenter_button = discord.ui.Button(label="Re-enter Email", custom_id="verify_3_current",
+                                                   style=discord.ButtonStyle.red)
+                reenter_button.callback = handle_interaction
 
-        if u_input_str is None:
-            # User used a reaction.
-            if u_input_react.emoji == "🇦":
-                grad_year = str(int(year_senior)-1)
-            elif u_input_react.emoji == "🇧":
-                grad_year = str(int(year_senior) - 2)
-            elif u_input_react.emoji == "🇨":
-                grad_year = str(int(year_senior) - 3)
-            elif u_input_react.emoji == "🇩":
-                grad_year = str(int(year_senior) - 4)
-            elif u_input_react.emoji == "🇪":
-                grad_year = str(int(year_senior) - 5)
-            elif u_input_react.emoji == "🇫":
-                grad_year = str(int(year_senior) - 6)
+                resp_view.add_item(resend_button)
+                resp_view.add_item(reenter_button)
+                my_bot.add_view(resp_view)
             else:
-                return -1
-        else:
-            await raw_message.delete()
-            # User entered a graduation year
-            grad_year = u_input_str
-        active_sessions[member] = (7, member_vs[1], member_vs[2], grad_year, member_vs[4], member_vs[5])
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage7", grad_year))
-        await member_vs[4].clear_reactions()
-        await member_vs[4].add_reaction("🔴")
-    elif member_vs[0] == 7:
-        if u_input_str is None:
-            # User used a reaction.
-            if u_input_react.emoji == "🔴":
-                active_sessions[member] = (7.5, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage_7b", "null"))
-                await member_vs[4].clear_reactions()
-            else:
-                return -1
-        else:
-            # User entered text.
-            await raw_message.delete()
-            if not email_is_valid(u_input_str):
-                return -1
-            user_email = u_input_str
-            code = random_code(8)
-            send_code(user_email, code)
-            active_sessions[member] = (8, code, user_email, member_vs[3], member_vs[4], member_vs[5])
-            await active_sessions[member][4].edit(embed=get_embed_by_name("stage8", user_email))
-            await member_vs[4].clear_reactions()
-            await member_vs[4].add_reaction("🔄")
-            await member_vs[4].add_reaction("❌")
-    elif member_vs[0] == 7.5:
-        if u_input_str is None:
-            return -1
-        await raw_message.delete()
-        full_name = u_input_str
-        active_sessions[member] = (7.75, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage_7c", "null"))
-        await member_vs[4].clear_reactions()
-        await cgh.notify_of_alum(member, full_name, member_vs[3])
-    elif member_vs[0] == 8:
-        if u_input_str is None:
-            # This means the input was a reaction.
-            if u_input_react.emoji == "🔄":
-                # User requested code to be resent.
-                code = random_code(8)
-                send_code(member_vs[2], code)
-                active_sessions[member] = (member_vs[0], code, member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage8", member_vs[2]))
-                await member_vs[4].clear_reactions()
-                await member_vs[4].add_reaction("🔄")
-                await member_vs[4].add_reaction("❌")
-            elif u_input_react.emoji == "❌":
-                # User requested to re-enter their email address.
-                active_sessions[member] = (7, member_vs[1], member_vs[2], member_vs[3], member_vs[4], member_vs[5])
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage7", "null"))
-                await member_vs[4].clear_reactions()
-        elif u_input_react is None:
-            # The input was a string.
-            real_code = member_vs[1]
-            entered_code = u_input_str
-            await raw_message.delete()
-            if real_code != entered_code:
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage8_failure", member_vs[2]))
-            else:
-                await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_alum", member_vs[2]))
-                await member_vs[4].clear_reactions()
-                await cgh.verify_user(member, member_vs[2], member_vs[3])
-                await cgh.log_alum(member, None, member_vs[2], member_vs[3])
-                await session_cleanup(member)
-        else:
-            return -1
+                # The code entered was valid! User verified!
+                resp_embed = get_embed_by_name("6_current", None)
+                resp_view = None
+                asyncio.create_task(session_cleanup(member))
 
-    return 0
+    elif member_vs.group == "former":
+        # The member is verifying as a former student.
+        if member_vs.stage not in [2, 3, 4]:
+            # Is the member in a stage that actually expects text input?
+            # If not, ignore their input.
+            return
+    else:
+        # The member is verifying as a guest or accepted student, or does not have a group yet.
+        if member_vs.stage != 1:
+            # The process for guests and accepted students is much shorter because it involves manual oversight.
+            # The only true stage in this flow is stage 1.
+            # If we're somehow not in that stage....ignore it.
+            return
+
+    await member_vs.menu_message.edit(embed=resp_embed, view=resp_view)
+    # Writes all updated data back to the master record.
+    active_sessions[member] = member_vs
 
 
 async def new_session(member):

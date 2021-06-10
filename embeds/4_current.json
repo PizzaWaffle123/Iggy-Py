@@ -5,12 +5,7 @@
       "fields": [
         {
           "name": "-----------",
-          "value": "**EMAIL:**\n{}",
-          "inline": true
-        },
-        {
-          "name": "-----------",
-          "value": ":arrows_counterclockwise: **Resend Code**\n:x: **Retype Email**",
+          "value": "**EMAIL:**\n{email}",
           "inline": true
         }
       ]

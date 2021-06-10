@@ -74,7 +74,7 @@ async def on_message(message):
         return
 
     # If the message was unrelated to verification, this will do nothing.
-    await verify.new_input(message.author, message.content, None, message.channel, message)
+    await verify.new_input(message.author, message.content, message.channel, message)
 
     # If the message is a published webhook, bullhorn it!
     if message.channel.id == 840674330479689758 and message.webhook_id != 0:
