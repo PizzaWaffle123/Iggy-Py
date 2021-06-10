@@ -44,6 +44,13 @@ class VerifySession:
         self.classyear = 0
         self.group = ""  # can be current, former, guest, or prosp
         self.stage = 0
+        self.fullname = ""
+
+    def to_dict(self):
+        vs_dict = {"code": self.code, "email": self.email, "channel": self.channel, "menu_message": self.menu_message,
+                   "classyear": str(self.classyear), "group": self.group, "stage": str(self.stage),
+                   "fullname": self.fullname}
+        return vs_dict
 
 
 context = ssl.create_default_context()
@@ -146,9 +153,15 @@ async def handle_interaction(interaction):
 
     stage = int(data_pieces[0])
     active_sessions[member].stage = stage
-    active_sessions[member].group = data_pieces[1]
 
-    resp_embed = get_embed_by_name("%s_%s" % (data_pieces[0], data_pieces[1]), "Null")
+    if active_sessions[member].group == "":
+        active_sessions[member].group = data_pieces[1]
+    elif active_sessions[member].group != data_pieces[1]:
+        # We have somehow received a button press for a group the member isn't in.
+        # This is bad.
+        print("There's a problem!")
+
+    resp_embed = get_embed_by_name("%s_%s" % (data_pieces[0], data_pieces[1]), active_sessions[member].to_dict())
 
     if stage == 3 and active_sessions[member].classyear == 0:
         active_sessions[member].classyear = int(data_pieces[2])
@@ -192,6 +205,12 @@ async def handle_interaction(interaction):
         else:
             resp_view = None
 
+    elif stage == 2:
+        resp_view = None
+        # Stage 2 is only used by those verifying as Former Students.
+        # However, it also has no special buttons and merely needs text input, which is handled in new_input()
+        # So this is fine.
+
     if resp_view is not None:
         resp_view.timeout = None
         for item in resp_view.children:
@@ -231,7 +250,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 member_vs.code = random_code(8)
                 send_code(member_vs.email, member_vs.code)
                 member_vs.stage = 4
-                resp_embed = get_embed_by_name("4_current", {"email": member_vs.email})
+                resp_embed = get_embed_by_name("4_current", member_vs.get_dict())
 
                 resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
                                                   style=discord.ButtonStyle.grey)
@@ -246,12 +265,12 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 my_bot.add_view(resp_view)
             else:
                 # Bad email address!
-                resp_embed = get_embed_by_name("3_current_bademail", None)
+                resp_embed = get_embed_by_name("3_current_bademail", member_vs.get_dict())
         elif member_vs.stage == 4:
             # The user should have entered their verification code.
             if member_vs.code != u_input_str:
                 # The code entered was invalid.
-                resp_embed = get_embed_by_name("4_current_badcode", {"email": member_vs.email})
+                resp_embed = get_embed_by_name("4_current_badcode", member_vs.get_dict())
                 resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
                                                   style=discord.ButtonStyle.grey)
                 resend_button.callback = handle_interaction
@@ -265,7 +284,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 my_bot.add_view(resp_view)
             else:
                 # The code entered was valid! User verified!
-                resp_embed = get_embed_by_name("6_current", None)
+                resp_embed = get_embed_by_name("6_current", member_vs.get_dict())
                 resp_view = None
                 asyncio.create_task(session_cleanup(member))
 
