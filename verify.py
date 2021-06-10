@@ -1,7 +1,10 @@
+import os
+
 import csv
 import smtplib
 import ssl
 import random
+from datetime import datetime
 import time
 
 import discord
@@ -22,43 +25,42 @@ Please provide the code to Iggy, and you'll get access to the server. Thanks!\n\
 
 (This bot maintained by the Holy Cross Gaming & Esports Club.)"""
 
-active_sessions = {}  # dictionary in format member:(stage,code,email,classyear,menu_message,channel)
-# stage is int, menu_message is message, channel is channel, all others are string
-# Quick reminder of verification stages
-# Stage 0 - User has just joined CGH.
-# User is prompted to react on the menu to declare what group they are in (Student, Guest, etc.)
-# Available groups are: Student, Prospective, Guest, Alumnus/Alumna
-# Stage 1 - User has selected Student and must now select their class year.
-# Stage 2 - User has selected their class year and we are now waiting for them to provide their email address.
-# Stage 3 - User has provided a valid email address, and we are now waiting for them to provide the security code.
-# User may also opt to re-send verification code if they have not received one.
-# User may also opt to return to Stage 2 and re-enter their email.
-# Stage 4 - User has selected Guest and is now waiting for an approval/denial.
-# Stage 5 - User has selected Prospective and must now enter their full name to continue.
-# Stage 6 - User has selected Alumnus/Alumna and must now select their year of graduation.
-# Stage 7 - User has selected their class year and we are now waiting for them to provide their email address.
-# User may also react here to indicate they do not have access to their Holy Cross email address.
-# This will prompt moderators to perform a manual verification.
-# Stage 8 - User provided a valid email address and we are now waiting for them to provide the security code.
-# See notes for stage 3.
-# Stage 9 - This is the "success" generic stage. It occurs in the following cases:
-# STUDENT - User verified a valid student email address.
-# ALUM - User verified a valid email address OR otherwise proved they are an alum.
-# GUEST - User's guest pass request was approved.
-# PROSPECTIVE - User entered their full name.
+active_sessions = {}
+# This is a dictionary
+# {member:VerifySession}
+# The below VerifySession class contains all the necessary data.
+
+my_bot = None
+
+
+class VerifySession:
+    def __init__(self):
+        self.code = ""
+        self.email = ""
+        self.channel = None
+        self.menu_message = None
+        self.classyear = 0
+        self.group = ""  # can be current, former, guest, or prosp
+
 
 context = ssl.create_default_context()
 
-year_senior = "2022"
-year_junior = "2023"
-year_sophomore = "2024"
-year_freshman = "2025"
-year_prospective = "2026"
+if datetime.now().month < 6:
+    year_senior = datetime.now().year
+else:
+    year_senior = datetime.now().year + 1
+
+year_junior = year_senior + 1
+year_sophomore = year_senior + 2
+year_freshman = year_senior + 3
+year_prospective = year_senior + 4
 
 
 def get_embed_by_name(name, info):
     rawname = name
     name = "embeds/" + name + ".json"
+    if not os.path.isfile(name):
+        return None
     with open(name) as jsonfile:
         data = json.load(jsonfile)
     if rawname == "stage3" or rawname == "stage8":
@@ -163,6 +165,59 @@ async def alum_verify(member, approval):
     else:
         await active_sessions[member][4].edit(embed=get_embed_by_name("stage_7c_failure", "null"))
     await session_cleanup(member)
+
+
+async def handle_interaction(interaction):
+    # If this function has been called, we know the interaction is from a button and related to verification.
+    # Therefore, we can assume it's valid.
+    global active_sessions
+
+    print("(verify.py - line 169)")
+    member = interaction.user
+
+    print(interaction.data["custom_id"])
+
+    stage_info = interaction.data["custom_id"].replace("verify_", "")
+    # By now, stage_info is a string that looks like "x_group"
+    # where x is the stage number to move the user to
+    # and group is one of the following: current, former, guest, prosp
+
+    # Coincidentally, the value of "stage_info" corresponds with the embed to be displayed.
+    # And because this is an interaction, we can rest assured that there's no scary user data to parse.
+
+    print(stage_info)
+    resp_embed = get_embed_by_name(stage_info, "Null")
+    active_sessions[member].group = stage_info.split("_")[1]
+    stage = int(stage_info.split("_")[0])
+
+    if stage == 1:
+        if active_sessions[member].group in ["current", "former"]:
+            resp_view = discord.ui.View()
+            resp_selection = discord.ui.Select()
+
+            if active_sessions[member].group == "current":
+                resp_selection.custom_id = "verify_3_current"
+
+                resp_selection.add_option(label=str(year_senior))
+                resp_selection.add_option(label=str(year_junior))
+                resp_selection.add_option(label=str(year_sophomore))
+                resp_selection.add_option(label=str(year_freshman))
+
+            else:
+                resp_selection.custom_id = "verify_3_former"
+                for year in range(year_senior-1, year_senior-11):
+                    resp_selection.add_option(label=str(year))
+                resp_view.add_item(discord.ui.Button(label="My year isn't listed.",
+                                                     style=discord.ButtonStyle.blurple,
+                                                     custom_id="verify_2_former"))
+            resp_view.add_item(resp_selection)
+
+        else:
+            resp_view = None
+
+    print("Verify.py here, attempting to edit the interaction message...")
+    await interaction.response.edit_message(embed=resp_embed, view=resp_view)
+    print("(verify.py - line 216)")
 
 
 async def new_input(member, u_input_str, u_input_react, origin_channel, raw_message):
@@ -399,10 +454,31 @@ async def new_session(member):
     # We call this function whenever someone new joins CGH.
     print("Starting new session...")
     verify_channel = await cgh.create_verify_session_channel(member)
-    temp_message = await verify_channel.send(content=member.mention, embed=get_embed_by_name("stage0", "null"))
+    active_sessions[member] = VerifySession()
 
-    await temp_message.add_reaction("🟣")
-    await temp_message.add_reaction("⚪")
-    await temp_message.add_reaction("🟡")
-    await temp_message.add_reaction("🔵")
-    active_sessions[member] = (0, "", "", "", temp_message, verify_channel)  # default instantiation
+    group_view = discord.ui.View()
+    group_button_current = discord.ui.Button(style=discord.ButtonStyle.grey, label="Current Student",
+                                             custom_id="verify_1_current")
+    group_button_former = discord.ui.Button(style=discord.ButtonStyle.grey, label="Former Student",
+                                            custom_id="verify_1_former")
+    group_button_guest = discord.ui.Button(style=discord.ButtonStyle.grey, label="Guest",
+                                           custom_id="verify_1_guest")
+    group_button_prosp = discord.ui.Button(style=discord.ButtonStyle.grey, label="Accepted/Prospective Student",
+                                           custom_id="verify_1_prosp")
+
+    group_view.add_item(group_button_current)
+    group_view.add_item(group_button_former)
+    group_view.add_item(group_button_guest)
+    group_view.add_item(group_button_prosp)
+
+    for item in group_view.children:
+        item.callback = handle_interaction
+
+    my_bot.add_view(group_view)
+
+    temp_message = await verify_channel.send(content=member.mention, embed=get_embed_by_name("stage0", "null"),
+                                             view=group_view)
+
+    active_sessions[member].channel = verify_channel
+    active_sessions[member].menu_message = temp_message
+
