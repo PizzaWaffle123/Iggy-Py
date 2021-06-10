@@ -45,11 +45,33 @@ class VerifySession:
         self.group = ""  # can be current, former, guest, or prosp
         self.stage = 0
         self.fullname = ""
+        self.joinreason = ""
+        self.username = ""
 
     def to_dict(self):
         vs_dict = {"code": self.code, "email": self.email, "channel": self.channel, "menu_message": self.menu_message,
                    "classyear": str(self.classyear), "group": self.group, "stage": str(self.stage),
-                   "fullname": self.fullname}
+                   "fullname": self.fullname, "username": self.username}
+
+        if self.group == "current":
+            vs_dict["friendly_group"] = "Current Student"
+        elif self.group == "former":
+            vs_dict["friendly_group"] = "Former Student"
+            vs_dict["infotitle"] = "Full Name"
+            vs_dict["info"] = self.fullname + " (%s)" % str(self.classyear)
+        elif self.group == "guest":
+            vs_dict["friendly_group"] = "Guest"
+            vs_dict["infotitle"] = "Reason for Joining"
+            vs_dict["info"] = self.joinreason
+        elif self.group == "prosp":
+            vs_dict["friendly_group"] = "Accepted Student"
+            vs_dict["infotitle"] = "Full Name"
+            vs_dict["info"] = self.fullname + " (%s)" % str(self.classyear)
+        else:
+            vs_dict["friendly_group"] = "Unknown"
+            vs_dict["infotitle"] = "Additional Info"
+            vs_dict["info"] = "No additional info provided."
+
         return vs_dict
 
 
@@ -77,6 +99,7 @@ def get_embed_by_name(name, info):
     if "fields" in data.keys() and info is not None:
         for field in data["fields"]:
             field["value"] = field["value"].format(**info)
+            field["name"] = field["name"].format(**info)
     return discord.Embed.from_dict(data)
 
 
@@ -116,23 +139,6 @@ async def session_cleanup(member):
     del active_sessions[member]
 
 
-async def guest_issue(member, approval):
-    # Notifies user if their Guest Pass has been approved or denied.
-    if approval is True:
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage9_guest", "null"))
-    else:
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage4_denied", "null"))
-    await session_cleanup(member)
-
-
-async def alum_verify(member, approval):
-    if approval is True:
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage_7c_success", "null"))
-    else:
-        await active_sessions[member][4].edit(embed=get_embed_by_name("stage_7c_failure", "null"))
-    await session_cleanup(member)
-
-
 async def handle_interaction(interaction):
     # If this function has been called, we know the interaction is from a button and related to verification.
     # Therefore, we can assume it's valid.
@@ -140,7 +146,6 @@ async def handle_interaction(interaction):
 
     print("(verify.py - line 174)")
     print(interaction.data)
-    member = interaction.user
 
     print(interaction.data["custom_id"])
 
@@ -152,6 +157,13 @@ async def handle_interaction(interaction):
     # There may be additional data attached by underscore, depending on stage.
 
     stage = int(data_pieces[0])
+    if stage in [6, 7]:
+        # The button press we received was likely a moderator responding to a verification request.
+        member = cgh.guild.get_member(int(data_pieces[2]))
+        request_embed = interaction.message.embeds[0]
+    else:
+        member = interaction.user
+
     active_sessions[member].stage = stage
 
     if active_sessions[member].group == "":
@@ -210,12 +222,44 @@ async def handle_interaction(interaction):
         # Stage 2 is only used by those verifying as Former Students.
         # However, it also has no special buttons and merely needs text input, which is handled in new_input()
         # So this is fine.
+    elif stage == 3:
+        # Because we are handling interactions here, this will only happen for Former Students.
+        # Since they are the only ones with buttons in stage 3.
+        no_email_button = discord.ui.Button(label="I don't have access to my HC email.",
+                                            style=discord.ButtonStyle.red, custom_id="verify_4.5_former")
+        no_email_button.callback = handle_interaction
+        resp_view.add_item(no_email_button)
+    elif stage == 4:
+        # We're handling interactions. The only time a button press will occur in stage 4
+        # is if somebody has requested a resend of a code.
+        # Handle it and carry on.
+        active_sessions[member].code = random_code(8)
+        send_code(active_sessions[member].email, active_sessions[member].code)
 
     if resp_view is not None:
         resp_view.timeout = None
         for item in resp_view.children:
             item.callback = handle_interaction
-    await interaction.response.edit_message(embed=resp_embed, view=resp_view)
+
+    if stage in [6, 7]:
+        # Here, we know that resp_embed needs to go to the user,
+        # but the user was not the one who spawned the interaction.
+        await active_sessions[member].menu_message.edit(embed=resp_embed, view=None)
+        if stage == 6:
+            request_embed.set_author(name="Approved")
+            request_embed.colour = discord.Colour(3066993)
+            request_embed.add_field(name="Approved By",
+                                    value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
+                                    inline=False)
+        elif stage == 7:
+            request_embed.set_author(name="Denied")
+            request_embed.colour = discord.Colour(15158332)
+            request_embed.add_field(name="Denied By",
+                                    value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
+                                    inline=False)
+        await interaction.response.edit_message(embed=request_embed, view=resp_view)
+    else:
+        await interaction.response.edit_message(embed=resp_embed, view=resp_view)
 
 
 async def new_input(member, u_input_str, origin_channel, raw_message):
@@ -250,7 +294,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 member_vs.code = random_code(8)
                 send_code(member_vs.email, member_vs.code)
                 member_vs.stage = 4
-                resp_embed = get_embed_by_name("4_current", member_vs.get_dict())
+                resp_embed = get_embed_by_name("4_current", member_vs.to_dict())
 
                 resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
                                                   style=discord.ButtonStyle.grey)
@@ -262,15 +306,14 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
 
                 resp_view.add_item(resend_button)
                 resp_view.add_item(reenter_button)
-                my_bot.add_view(resp_view)
             else:
                 # Bad email address!
-                resp_embed = get_embed_by_name("3_current_bademail", member_vs.get_dict())
+                resp_embed = get_embed_by_name("3_current_bademail", member_vs.to_dict())
         elif member_vs.stage == 4:
             # The user should have entered their verification code.
             if member_vs.code != u_input_str:
                 # The code entered was invalid.
-                resp_embed = get_embed_by_name("4_current_badcode", member_vs.get_dict())
+                resp_embed = get_embed_by_name("4_current_badcode", member_vs.to_dict())
                 resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
                                                   style=discord.ButtonStyle.grey)
                 resend_button.callback = handle_interaction
@@ -281,19 +324,71 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
 
                 resp_view.add_item(resend_button)
                 resp_view.add_item(reenter_button)
-                my_bot.add_view(resp_view)
             else:
                 # The code entered was valid! User verified!
-                resp_embed = get_embed_by_name("6_current", member_vs.get_dict())
+                resp_embed = get_embed_by_name("6_current", member_vs.to_dict())
                 resp_view = None
                 asyncio.create_task(session_cleanup(member))
 
     elif member_vs.group == "former":
         # The member is verifying as a former student.
-        if member_vs.stage not in [2, 3, 4]:
+        if member_vs.stage not in [2, 3, 4, 4.5]:
             # Is the member in a stage that actually expects text input?
             # If not, ignore their input.
+            # In stage 4.5, user was supposed to enter their fullname.
             return
+
+        if member_vs.stage == 2:
+            # The member has input their graduation year.
+            member_vs.classyear = int(u_input_str)
+            member_vs.stage = 3
+            resp_embed = get_embed_by_name("3_former")
+            no_email_button = discord.ui.Button(label="I don't have access to my HC email.",
+                                                style=discord.ButtonStyle.red, custom_id="verify_4.5_former")
+            no_email_button.callback = handle_interaction
+            resp_view.add_item(no_email_button)
+        elif member_vs.stage == 3:
+            if email_is_valid(u_input_str):
+                # The email address is valid.
+                member_vs.email = u_input_str
+                member_vs.code = random_code(8)
+                send_code(member_vs.email, member_vs.code)
+                member_vs.stage = 4
+                resp_embed = get_embed_by_name("4_former", member_vs.to_dict())
+
+                resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_former",
+                                                  style=discord.ButtonStyle.grey)
+                resend_button.callback = handle_interaction
+
+                reenter_button = discord.ui.Button(label="Re-enter Email", custom_id="verify_3_former",
+                                                   style=discord.ButtonStyle.red)
+                reenter_button.callback = handle_interaction
+
+                resp_view.add_item(resend_button)
+                resp_view.add_item(reenter_button)
+            else:
+                # Bad email address!
+                resp_embed = get_embed_by_name("3_former_bademail", member_vs.to_dict())
+        elif member_vs.stage == 4:
+            if member_vs.code != u_input_str:
+                # The code entered was invalid.
+                resp_embed = get_embed_by_name("4_former_badcode", member_vs.to_dict())
+                resend_button = discord.ui.Button(label="Resend Code", custom_id="verify_4_current",
+                                                  style=discord.ButtonStyle.grey)
+                resend_button.callback = handle_interaction
+
+                reenter_button = discord.ui.Button(label="Re-enter Email", custom_id="verify_3_current",
+                                                   style=discord.ButtonStyle.red)
+                reenter_button.callback = handle_interaction
+
+                resp_view.add_item(resend_button)
+                resp_view.add_item(reenter_button)
+            else:
+                # The code entered was valid! User verified!
+                resp_embed = get_embed_by_name("6_former", member_vs.to_dict())
+                resp_view = None
+                asyncio.create_task(session_cleanup(member))
+
     else:
         # The member is verifying as a guest or accepted student, or does not have a group yet.
         if member_vs.stage != 1:
@@ -302,6 +397,16 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             # If we're somehow not in that stage....ignore it.
             return
 
+        resp_view = None
+        if member_vs.group == "guest":
+            member_vs.joinreason = u_input_str
+        elif member_vs.group == "prosp":
+            member_vs.fullname = u_input_str
+        member_vs.stage = 5
+        resp_embed = get_embed_by_name("5_%s" % member_vs.group, member_vs.to_dict())
+
+    if resp_view is not None:
+        my_bot.add_view(resp_view)
     await member_vs.menu_message.edit(embed=resp_embed, view=resp_view)
     # Writes all updated data back to the master record.
     active_sessions[member] = member_vs
@@ -314,6 +419,7 @@ async def new_session(member):
     print("Starting new session...")
     verify_channel = await cgh.create_verify_session_channel(member)
     active_sessions[member] = VerifySession()
+    active_sessions[member].username = "%s#%s" % (member.name, member.discriminator)
 
     group_view = discord.ui.View()
     group_button_current = discord.ui.Button(style=discord.ButtonStyle.grey, label="Current Student",
