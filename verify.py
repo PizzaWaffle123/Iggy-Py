@@ -1,6 +1,5 @@
 import os
 
-import csv
 import smtplib
 import ssl
 import random
@@ -172,52 +171,70 @@ async def handle_interaction(interaction):
     # Therefore, we can assume it's valid.
     global active_sessions
 
-    print("(verify.py - line 169)")
+    print("(verify.py - line 174)")
+    print(interaction.data)
     member = interaction.user
 
     print(interaction.data["custom_id"])
 
-    stage_info = interaction.data["custom_id"].replace("verify_", "")
-    # By now, stage_info is a string that looks like "x_group"
-    # where x is the stage number to move the user to
-    # and group is one of the following: current, former, guest, prosp
+    stage_data = interaction.data["custom_id"].replace("verify_", "")
+    data_pieces = stage_data.split("_")
 
-    # Coincidentally, the value of "stage_info" corresponds with the embed to be displayed.
-    # And because this is an interaction, we can rest assured that there's no scary user data to parse.
+    # stage_data is always a string of form x_string to start, where x is the stage we are GOING TO
+    # and string is the specific group flow we're in.
+    # There may be additional data attached by underscore, depending on stage.
 
-    print(stage_info)
-    resp_embed = get_embed_by_name(stage_info, "Null")
-    active_sessions[member].group = stage_info.split("_")[1]
-    stage = int(stage_info.split("_")[0])
+    stage = int(data_pieces[0])
+    active_sessions[member].group = data_pieces[1]
+
+    resp_embed = get_embed_by_name("%s_%s" % (data_pieces[0], data_pieces[1]), "Null")
+
+    if stage == 3:
+        active_sessions[member].classyear = int(data_pieces[2])
+        # If we're going to stage 3, then the user has just selected their class year.
+
+    resp_view = discord.ui.View()
 
     if stage == 1:
-        if active_sessions[member].group in ["current", "former"]:
-            resp_view = discord.ui.View()
-            resp_selection = discord.ui.Select()
+        if active_sessions[member].group == "current":
+            button_senior = discord.ui.Button(label=str(year_senior),
+                                              custom_id="verify_3_current_%s" % str(year_senior),
+                                              style=discord.ButtonStyle.blurple)
+            button_junior = discord.ui.Button(label=str(year_junior),
+                                              custom_id="verify_3_current_%s" % str(year_junior),
+                                              style=discord.ButtonStyle.blurple)
+            button_sophomore = discord.ui.Button(label=str(year_sophomore),
+                                              custom_id="verify_3_current_%s" % str(year_sophomore),
+                                              style=discord.ButtonStyle.blurple)
+            button_freshman = discord.ui.Button(label=str(year_freshman),
+                                              custom_id="verify_3_current_%s" % str(year_freshman),
+                                              style=discord.ButtonStyle.blurple)
 
-            if active_sessions[member].group == "current":
-                resp_selection.custom_id = "verify_3_current"
+            resp_view.add_item(button_senior)
+            resp_view.add_item(button_junior)
+            resp_view.add_item(button_sophomore)
+            resp_view.add_item(button_freshman)
 
-                resp_selection.add_option(label=str(year_senior))
-                resp_selection.add_option(label=str(year_junior))
-                resp_selection.add_option(label=str(year_sophomore))
-                resp_selection.add_option(label=str(year_freshman))
+        elif active_sessions[member].group == "former":
 
-            else:
-                resp_selection.custom_id = "verify_3_former"
-                for year in range(year_senior-1, year_senior-11):
-                    resp_selection.add_option(label=str(year))
-                resp_view.add_item(discord.ui.Button(label="My year isn't listed.",
-                                                     style=discord.ButtonStyle.blurple,
-                                                     custom_id="verify_2_former"))
-            resp_view.add_item(resp_selection)
+            for i in range(year_senior-1, year_senior-11, -1):
+                print("Alumni looping!")
+                temp_button = discord.ui.Button(label=str(i), custom_id="verify_3_former_%s" % str(i),
+                                                style=discord.ButtonStyle.blurple)
+                resp_view.add_item(temp_button)
+
+            panic_button = discord.ui.Button(label="My year isn't listed!", custom_id="verify_2_former",
+                                             style=discord.ButtonStyle.red)
+            resp_view.add_item(panic_button)
 
         else:
             resp_view = None
 
-    print("Verify.py here, attempting to edit the interaction message...")
+    if resp_view is not None:
+        resp_view.timeout = None
+        for item in resp_view.children:
+            item.callback = handle_interaction
     await interaction.response.edit_message(embed=resp_embed, view=resp_view)
-    print("(verify.py - line 216)")
 
 
 async def new_input(member, u_input_str, u_input_react, origin_channel, raw_message):
@@ -470,6 +487,8 @@ async def new_session(member):
     group_view.add_item(group_button_former)
     group_view.add_item(group_button_guest)
     group_view.add_item(group_button_prosp)
+
+    group_view.timeout = None
 
     for item in group_view.children:
         item.callback = handle_interaction
