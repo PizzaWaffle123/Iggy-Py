@@ -1,5 +1,7 @@
 {
-      "title": "Class Year Selection",
-      "description": "Please select the year that you graduated. If you graduated more than 10 years ago, click the button.",
+      "author": {
+        "name": "Class Year Selection"
+      },
+      "title": "Please select the year that you graduated.",
       "color": 4171755
     }

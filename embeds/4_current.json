@@ -1,11 +1,14 @@
 {
-      "title": "Input Verification Code",
-      "description": "You should have received an 8-digit security code to the email address you provided. Once you've received it, send it here.",
+      "author": {
+        "name": "Input Verification Code"
+      },
+      "title": "Please enter the 8-digit security code.",
+      "description": "The code was sent to the email you provided, which is shown below.\nIf you did not receive the code, you can use the buttons below to resend a new code, or re-enter your email address.",
       "color": 16295218,
       "fields": [
         {
-          "name": "-----------",
-          "value": "**EMAIL:**\n{email}",
+          "name": "PROVIDED EMAIL:",
+          "value": "{email}",
           "inline": true
         }
       ]

@@ -1,5 +1,7 @@
 {
-      "title": "Class Year Selection",
-      "description": "Please select your expected year of graduation - this should match the year in your Holy Cross email address.",
+      "author": {
+        "name": "Class Year Selection"
+      },
+      "title": "Please select your expected year of graduation.",
       "color": 4171755
     }
