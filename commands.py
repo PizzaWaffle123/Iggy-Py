@@ -144,6 +144,11 @@ async def csetup(ctx):
             r = requests.post(url, headers=headers, json=data)
             print("Received Status Code: %d" % r.status_code)
 
+    with open("./config/permissions.json") as permfile:
+        data = json.load(jsonfile)
+        r = requests.post(url + "/permissions", headers=headers, json=data)
+        print("[PERMS] Received Status Code: %d" % r.status_code)
+
 
 def setup(bot):
     global my_bot
