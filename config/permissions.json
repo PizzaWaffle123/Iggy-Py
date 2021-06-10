@@ -1,0 +1,77 @@
+[
+    {
+        "id": "852533329692721182",
+        "permissions": [
+            {
+                "id": 432940942425587712,
+                "type": 1,
+                "permission": true
+            },
+            {
+                "id": 681213070592573481,
+                "type": 1,
+                "permission": true
+            }
+        ]
+    },
+    {
+        "id": "852302453318877214",
+        "permissions": [
+            {
+                "id": 432940942425587712,
+                "type": 1,
+                "permission": true
+            },
+            {
+                "id": 681213070592573481,
+                "type": 1,
+                "permission": true
+            }
+        ]
+    },
+    {
+        "id": "852533331051675659",
+        "permissions": [
+            {
+                "id": 432940942425587712,
+                "type": 1,
+                "permission": true
+            },
+            {
+                "id": 681213070592573481,
+                "type": 1,
+                "permission": true
+            }
+        ]
+    },
+    {
+        "id": "851866478047264798",
+        "permissions": [
+            {
+                "id": 432940942425587712,
+                "type": 1,
+                "permission": true
+            },
+            {
+                "id": 681213070592573481,
+                "type": 1,
+                "permission": true
+            }
+        ]
+    },
+    {
+        "id": "850357808721035264",
+        "permissions": [
+            {
+                "id": 432940942425587712,
+                "type": 1,
+                "permission": true
+            },
+            {
+                "id": 681213070592573481,
+                "type": 1,
+                "permission": true
+            }
+        ]
+    }
+]
