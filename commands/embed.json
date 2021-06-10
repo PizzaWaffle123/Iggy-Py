@@ -8,5 +8,6 @@
                 "type": 3,
                 "required": true
             }
-        ]
+        ],
+        "default_permission": false
     }

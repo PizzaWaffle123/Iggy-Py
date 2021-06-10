@@ -1,4 +1,5 @@
 {
         "name": "count",
-        "description": "Returns the count of verified users in the server."
+        "description": "Returns the count of verified users in the server.",
+        "default_permission": false
     }

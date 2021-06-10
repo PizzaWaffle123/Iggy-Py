@@ -1,4 +1,5 @@
 {
         "name": "graduate",
-        "description": "Converts all eligible students into Alumni."
+        "description": "Converts all eligible students into Alumni.",
+        "default_permission": false
     }

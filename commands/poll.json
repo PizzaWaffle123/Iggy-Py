@@ -34,5 +34,6 @@
               }
             ]
           }
-        ]
+        ],
+        "default_permission": false
     }
