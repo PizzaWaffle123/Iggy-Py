@@ -1,18 +1,13 @@
 {
       "author": {
-        "name": "Pending"
+        "name": "Verification Request"
       },
-      "title": "Verification Request",
+      "title": "{friendly_group} Pending",
       "description": "The following user is requesting verification.",
       "fields": [
         {
           "name": "Username",
           "value": "{username}",
-          "inline": true
-        },
-        {
-          "name": "Group",
-          "value": "{friendly_group}",
           "inline": true
         },
         {

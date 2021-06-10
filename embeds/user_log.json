@@ -1,14 +1,9 @@
 {
       "author": {
-        "name": "New Verified User"
+        "name": "New Verified User - {friendly_group}"
       },
       "title": "{username}",
       "fields": [
-        {
-          "name": "Group",
-          "value": "{friendly_group}",
-          "inline": true
-        },
         {
           "name": "Class Year",
           "value": "{classyear}",
