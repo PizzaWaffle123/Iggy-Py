@@ -120,7 +120,8 @@ async def new_user(user):
     await member.add_roles(role_pending)
 
 
-async def verify_user(user, user_vs):
+async def verify_user(user, user_vs, send_log):
+
     member = guild.get_member(user_id=user.id)
     if member is None:
         return
@@ -136,8 +137,14 @@ async def verify_user(user, user_vs):
     elif user_vs.group == "guest":
         await member.add_roles(guild.get_role(roles["guest"]))
 
+    if send_log is False:
+        return
+
     logged_user = verify.get_embed_by_name("user_log", user_vs.to_dict())
-    logged_user.set_thumbnail(url=user.avatar_url)
+    logged_user.set_thumbnail(url=user.avatar.url)
+
+    if user_vs.group == "guest":
+        logged_user.colour = discord.Colour(12042958)
 
     await guild.get_channel(channels["member_log"]).send(embed=logged_user)
 
@@ -158,7 +165,7 @@ async def username_update(u_before, u_after):
 async def welcome_message(member):
     global channels
     global guild
-    await guild.get_channel(channels["server_work"]).send(content="<@&839897854712479784>",
+    await guild.get_channel(channels["general"]).send(content="<@&839897854712479784>",
                                                           embed=welcome.get_welcome_embed(member))
 
 
@@ -208,10 +215,15 @@ async def generate_verify_request(requester, requester_vs):
 
     request_embed = verify.get_embed_by_name("verify_request", requester_vs.to_dict())
 
+    request_embed.set_thumbnail(url=requester.avatar.url)
+
+    if requester_vs.group == "guest":
+        request_embed.colour = discord.Colour(12042958)
+
     request_approval_buttons.timeout = None
     my_bot.add_view(request_approval_buttons)
 
-    guild.get_channel(int(channels["member_log"])).send(embed=request_embed, view=request_approval_buttons)
+    await guild.get_channel(int(channels["member_log"])).send(embed=request_embed, view=request_approval_buttons)
 
 
 async def user_left(member):

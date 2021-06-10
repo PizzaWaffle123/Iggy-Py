@@ -55,6 +55,8 @@ class VerifySession:
 
         if self.group == "current":
             vs_dict["friendly_group"] = "Current Student"
+            vs_dict["infotitle"] = "Email Address"
+            vs_dict["info"] = self.email
         elif self.group == "former":
             vs_dict["friendly_group"] = "Former Student"
             vs_dict["infotitle"] = "Full Name"
@@ -99,6 +101,7 @@ def get_embed_by_name(name, info):
 
     if "fields" in data.keys() and info is not None:
         data["title"] = data["title"].format(**info)
+        data["author"]["name"] = data["author"]["name"].format(**info)
         for field in data["fields"]:
             field["value"] = field["value"].format(**info)
             field["name"] = field["name"].format(**info)
@@ -137,6 +140,8 @@ async def session_cleanup(member):
     await asyncio.sleep(30)
     print("Channel deletion is occurring.")
     await active_sessions[member].channel.delete(reason="Verification session ended.")
+    if active_sessions[member].group == "guest" and active_sessions[member].stage == 7:
+        await cgh.guild.kick(member, reason="Guest Pass was denied.")
     print("Channel deleted.")
     del active_sessions[member]
 
@@ -170,11 +175,15 @@ async def handle_interaction(interaction):
 
     if active_sessions[member].group == "":
         active_sessions[member].group = data_pieces[1]
+        if data_pieces[1] == "prosp":
+            active_sessions[member].classyear = year_prospective
     elif active_sessions[member].group != data_pieces[1]:
         # We have somehow received a button press for a group the member isn't in.
         # This is bad.
         print("There's a problem!")
 
+    print("%s_%s" % (data_pieces[0], data_pieces[1]))
+    print("verify.py - Line 179")
     resp_embed = get_embed_by_name("%s_%s" % (data_pieces[0], data_pieces[1]), active_sessions[member].to_dict())
 
     if stage == 3 and active_sessions[member].classyear == 0:
@@ -225,12 +234,11 @@ async def handle_interaction(interaction):
         # However, it also has no special buttons and merely needs text input, which is handled in new_input()
         # So this is fine.
     elif stage == 3:
-        # Because we are handling interactions here, this will only happen for Former Students.
-        # Since they are the only ones with buttons in stage 3.
-        no_email_button = discord.ui.Button(label="I don't have access to my HC email.",
-                                            style=discord.ButtonStyle.red, custom_id="verify_4.5_former")
-        no_email_button.callback = handle_interaction
-        resp_view.add_item(no_email_button)
+        if active_sessions[member].group == "former":
+            no_email_button = discord.ui.Button(label="I don't have access to my HC email.",
+                                                style=discord.ButtonStyle.red, custom_id="verify_4.5_former")
+            no_email_button.callback = handle_interaction
+            resp_view.add_item(no_email_button)
     elif stage == 4:
         # We're handling interactions. The only time a button press will occur in stage 4
         # is if somebody has requested a resend of a code.
@@ -248,23 +256,26 @@ async def handle_interaction(interaction):
         # but the user was not the one who spawned the interaction.
         await active_sessions[member].menu_message.edit(embed=resp_embed, view=None)
         if stage == 6:
-            request_embed.set_author(name="Approved")
+            request_embed.title = "{friendly_group} Approved".format(**active_sessions[member].to_dict())
             request_embed.colour = discord.Colour(3066993)
             request_embed.add_field(name="Approved By",
                                     value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
                                     inline=False)
-            await cgh.verify_user(member, active_sessions[member])
+            await cgh.verify_user(member, active_sessions[member], False)
         elif stage == 7:
-            request_embed.set_author(name="Denied")
+            request_embed.title = "{friendly_group} Denied".format(**active_sessions[member].to_dict())
             request_embed.colour = discord.Colour(15158332)
             request_embed.add_field(name="Denied By",
                                     value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
                                     inline=False)
         await interaction.response.edit_message(embed=request_embed, view=resp_view)
 
-        await session_cleanup(member)
+        asyncio.create_task(session_cleanup(member))
     else:
-        await interaction.response.edit_message(embed=resp_embed, view=resp_view)
+        if resp_view is None:
+            await interaction.response.edit_message(embed=resp_embed, view=None)
+        else:
+            await interaction.response.edit_message(embed=resp_embed, view=resp_view)
 
 
 async def new_input(member, u_input_str, origin_channel, raw_message):
@@ -273,13 +284,13 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
     if member not in active_sessions.keys():
         # Is the member actually getting verified?
         # If not, ignore it.
-        return
+        return False
     member_vs = active_sessions[member]  # The member is getting verified, pull their session.
 
     if origin_channel != member_vs.channel:
         # Was the message actually sent in their verification channel?
         # If not, ignore it.
-        return
+        return False
 
     resp_embed = discord.Embed()
     resp_view = discord.ui.View()
@@ -289,7 +300,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
         if member_vs.stage not in [3, 4]:
             # Is the member in a stage that actually expects text input?
             # If not, ignore their input.
-            return
+            return False
 
         if member_vs.stage == 3:
             # The user should have entered their email.
@@ -332,6 +343,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             else:
                 # The code entered was valid! User verified!
                 resp_embed = get_embed_by_name("6_current", member_vs.to_dict())
+                await cgh.verify_user(member, member_vs, True)
                 resp_view = None
                 asyncio.create_task(session_cleanup(member))
 
@@ -341,7 +353,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             # Is the member in a stage that actually expects text input?
             # If not, ignore their input.
             # In stage 4.5, user was supposed to enter their fullname.
-            return
+            return False
 
         if member_vs.stage == 2:
             # The member has input their graduation year.
@@ -391,6 +403,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             else:
                 # The code entered was valid! User verified!
                 resp_embed = get_embed_by_name("6_former", member_vs.to_dict())
+                await cgh.verify_user(member, member_vs, True)
                 resp_view = None
                 asyncio.create_task(session_cleanup(member))
         elif member_vs.stage == 4.5:
@@ -405,7 +418,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             # The process for guests and accepted students is much shorter because it involves manual oversight.
             # The only true stage in this flow is stage 1.
             # If we're somehow not in that stage....ignore it.
-            return
+            return False
 
         resp_view = None
         if member_vs.group == "guest":
@@ -421,6 +434,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
     await member_vs.menu_message.edit(embed=resp_embed, view=resp_view)
     # Writes all updated data back to the master record.
     active_sessions[member] = member_vs
+    return True
 
 
 async def new_session(member):

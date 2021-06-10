@@ -13,7 +13,7 @@ bot = commands.Bot(intents=discord.Intents.all(), command_prefix='$')
 async def on_ready():
     # This event happens when the bot spins up.
     print('Logged on as {0}!'.format(bot.user))
-    cgh.setup(bot.guilds[0])
+    cgh.setup(bot.guilds[0], bot)
     bot.load_extension('commands')
     verify.my_bot = bot
     await polls.refresh_from_file()
@@ -52,7 +52,7 @@ async def on_member_update(before, after):
     role_changed = after_roles - before_roles
     for role in role_changed:
         if role.id == cgh.get_role_id_by_name("crusader"):
-            cgh.welcome_message(after)
+            await cgh.welcome_message(after)
             break
 
 
@@ -74,7 +74,10 @@ async def on_message(message):
         return
 
     # If the message was unrelated to verification, this will do nothing.
-    await verify.new_input(message.author, message.content, message.channel, message)
+    verify_message = await verify.new_input(message.author, message.content, message.channel, message)
+    if verify_message is True:
+        await message.delete()
+        return
 
     # If the message is a published webhook, bullhorn it!
     if message.channel.id == 840674330479689758 and message.webhook_id != 0:
