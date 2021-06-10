@@ -318,7 +318,7 @@ async def new_session(member):
 
     my_bot.add_view(group_view)
 
-    temp_message = await verify_channel.send(content=member.mention, embed=get_embed_by_name("stage0", "null"),
+    temp_message = await verify_channel.send(content=member.mention, embed=get_embed_by_name("0_all", None),
                                              view=group_view)
 
     active_sessions[member].channel = verify_channel
