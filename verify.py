@@ -246,7 +246,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 my_bot.add_view(resp_view)
             else:
                 # Bad email address!
-                pass
+                resp_embed = get_embed_by_name("3_current_bademail", None)
         elif member_vs.stage == 4:
             # The user should have entered their verification code.
             if member_vs.code != u_input_str:
