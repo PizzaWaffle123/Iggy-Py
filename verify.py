@@ -62,6 +62,7 @@ class VerifySession:
         elif self.group == "guest":
             vs_dict["friendly_group"] = "Guest"
             vs_dict["infotitle"] = "Reason for Joining"
+            vs_dict["classyear"] = "Not Applicable"
             vs_dict["info"] = self.joinreason
         elif self.group == "prosp":
             vs_dict["friendly_group"] = "Accepted Student"
@@ -97,6 +98,7 @@ def get_embed_by_name(name, info):
         data = json.load(jsonfile)
 
     if "fields" in data.keys() and info is not None:
+        data["title"] = data["title"].format(**info)
         for field in data["fields"]:
             field["value"] = field["value"].format(**info)
             field["name"] = field["name"].format(**info)
@@ -251,6 +253,7 @@ async def handle_interaction(interaction):
             request_embed.add_field(name="Approved By",
                                     value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
                                     inline=False)
+            await cgh.verify_user(member, active_sessions[member])
         elif stage == 7:
             request_embed.set_author(name="Denied")
             request_embed.colour = discord.Colour(15158332)
@@ -258,6 +261,8 @@ async def handle_interaction(interaction):
                                     value="%s#%s" % (interaction.user.name, interaction.user.discriminator),
                                     inline=False)
         await interaction.response.edit_message(embed=request_embed, view=resp_view)
+
+        await session_cleanup(member)
     else:
         await interaction.response.edit_message(embed=resp_embed, view=resp_view)
 
@@ -388,6 +393,11 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
                 resp_embed = get_embed_by_name("6_former", member_vs.to_dict())
                 resp_view = None
                 asyncio.create_task(session_cleanup(member))
+        elif member_vs.stage == 4.5:
+            # The user inputted their full name.
+            member_vs.fullname = u_input_str
+            resp_embed = get_embed_by_name("5_former", member_vs.to_dict())
+            await cgh.generate_verify_request(member, member_vs)
 
     else:
         # The member is verifying as a guest or accepted student, or does not have a group yet.
@@ -404,6 +414,7 @@ async def new_input(member, u_input_str, origin_channel, raw_message):
             member_vs.fullname = u_input_str
         member_vs.stage = 5
         resp_embed = get_embed_by_name("5_%s" % member_vs.group, member_vs.to_dict())
+        await cgh.generate_verify_request(member, member_vs)
 
     if resp_view is not None:
         my_bot.add_view(resp_view)

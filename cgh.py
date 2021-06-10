@@ -10,12 +10,14 @@ guild = None
 roles = {}
 channels = {}
 requests = {}
+my_bot = None
 
 
-def setup(myguild):
+def setup(myguild, bot):
     global guild
     global roles
     global channels
+    global my_bot
     guild = myguild
     with open('csv/roles.csv') as csvfile:
         rolereader = csv.reader(csvfile, dialect='excel')
@@ -29,6 +31,8 @@ def setup(myguild):
         for channel in channelreader:
             channels[channel[0]] = int(channel[1])
             print("Registered new channel {} of ID {}".format(channel[0], channel[1]))
+
+    my_bot = bot
 
 
 def update_from_csv():
@@ -116,79 +120,25 @@ async def new_user(user):
     await member.add_roles(role_pending)
 
 
-async def verify_user(user, user_email, gradyear):
-    global roles
-    global guild
-    global channels
-    # This function gets called when a user has completed verification.
-    # It is used for role adjustment and logging.
+async def verify_user(user, user_vs):
     member = guild.get_member(user_id=user.id)
     if member is None:
         return
-
     if guild.get_role(roles["pending"]) in member.roles:
         await member.remove_roles(guild.get_role(roles["pending"]))
-    await member.add_roles(guild.get_role(roles["crusader"]))
-    await member.add_roles(guild.get_role(roles[gradyear]))
-    logged_user = discord.Embed()
-    logged_user.title = "New Verified User"
-    logged_user.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    logged_user.add_field(name="Email Address", value=user_email, inline=False)
-    logged_user.add_field(name="Class Year", value=gradyear, inline=False)
+
+    if user_vs.group in ["current", "former", "prosp"]:
+        await member.add_roles(guild.get_role(roles["crusader"]))
+        await member.add_roles(guild.get_role(roles[str(user_vs.classyear)]))
+
+    if user_vs.group == "former":
+        await member.add_roles(guild.get_role(roles["alumni"]))
+    elif user_vs.group == "guest":
+        await member.add_roles(guild.get_role(roles["guest"]))
+
+    logged_user = verify.get_embed_by_name("user_log", user_vs.to_dict())
     logged_user.set_thumbnail(url=user.avatar_url)
-    logged_user.colour = discord.Colour(10444272)
-    await guild.get_channel(channels["member_log"]).send(embed=logged_user)
 
-
-async def log_prospective(user, full_name, gradyear):
-    global roles
-    global guild
-    global channels
-    # This function gets called when a user has completed verification.
-    # It is used for role adjustment and logging.
-    member = guild.get_member(user_id=user.id)
-    if member is None:
-        return
-
-    if guild.get_role(roles["pending"]) in member.roles:
-        await member.remove_roles(guild.get_role(roles["pending"]))
-    await member.add_roles(guild.get_role(roles["crusader"]))
-    await member.add_roles(guild.get_role(roles[gradyear]))
-    logged_user = discord.Embed()
-    logged_user.title = "New Prospective Student"
-    logged_user.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    logged_user.add_field(name="Full Name", value=full_name, inline=False)
-    logged_user.add_field(name="Class Year", value=gradyear, inline=False)
-    logged_user.set_thumbnail(url=user.avatar_url)
-    logged_user.colour = discord.Colour(4171755)
-    await guild.get_channel(channels["member_log"]).send(embed=logged_user)
-
-
-async def log_alum(user, full_name, email, gradyear):
-    global roles
-    global guild
-    global channels
-    # This function gets called when a user has completed verification.
-    # It is used for role adjustment and logging.
-    member = guild.get_member(user_id=user.id)
-    if member is None:
-        return
-
-    if guild.get_role(roles["pending"]) in member.roles:
-        await member.remove_roles(guild.get_role(roles["pending"]))
-    await member.add_roles(guild.get_role(roles["crusader"]))
-    await member.add_roles(guild.get_role(roles["alumni"]))
-    await member.add_roles(guild.get_role(roles[gradyear]))
-    logged_user = discord.Embed()
-    logged_user.title = "New Alumnus/Alumna"
-    logged_user.add_field(name="Username", value="%s#%s" % (user.name, user.discriminator), inline=False)
-    if full_name is not None:
-        logged_user.add_field(name="Full Name", value=full_name, inline=False)
-    if email is not None:
-        logged_user.add_field(name="Email Address", value=email, inline=False)
-    logged_user.add_field(name="Class Year", value=gradyear, inline=False)
-    logged_user.set_thumbnail(url=user.avatar_url)
-    logged_user.colour = discord.Colour(5793266)
     await guild.get_channel(channels["member_log"]).send(embed=logged_user)
 
 
@@ -238,109 +188,30 @@ async def count_seniors(gradyear):
     return grad_counter
 
 
-async def generate_verify_request(requester, group, fullname, info):
-    # If group is guest, info will be a reason for joining.
-    # If group is alum, info will be year of graduation.
-    # If group is prosp, info will be ignored.
+async def generate_verify_request(requester, requester_vs):
+    # Parameters are the user requesting the pass and their VerifySession which includes all necessary data.
     global guild
-    global requests
     global channels
-
-    request_embed = discord.Embed()
-    request_embed.set_thumbnail(url=requester.avatar)
-    request_embed.add_field(name="Username", value="%s#%s" % (requester.name, requester.discriminator), inline=False)
-    request_embed.add_field(name="Full Name", value=fullname, inline=False)
-    request_embed.colour = discord.Colour(12042958)
-
-    if group == "guest":
-        request_embed.title = "Request - Guest Pass"
-        request_embed.description = "**Reason For Request**\n" + info
-    elif group == "alum":
-        request_embed.title = "Request - Alum Verification"
-        request_embed.description = "**Class Year**\n" + info
-    elif group == "prosp":
-        request_embed.title = "Request - Accepted Student"
-        request_embed.description = "This student does not yet have a valid Holy Cross email address!"
-    else:
-        request_embed.title = "Request - Generic"
-        request_embed.description = "Something has gone wrong here. Please ask the bot maintainer to check the code."
+    global my_bot
 
     request_approval_buttons = discord.ui.View()
-    request_btn_approve = discord.ui.Button(label="Approve", style=3)
-    request_btn_approve.callback = handle_approval
+    request_btn_approve = discord.ui.Button(label="Approve", style=discord.ButtonStyle.green,
+                                            custom_id="verify_6_%s_%s" % (requester_vs.group, str(requester.id)))
+    request_btn_approve.callback = verify.handle_interaction
 
-    request_btn_deny = discord.ui.Button(label="Deny", style=4)
-    request_btn_deny.callback = handle_deny
+    request_btn_deny = discord.ui.Button(label="Deny", style=discord.ButtonStyle.red,
+                                         custom_id="verify_7_%s_%s" % (requester_vs.group, str(requester.id)))
+    request_btn_deny.callback = verify.handle_interaction
 
     request_approval_buttons.add_item(request_btn_approve)
     request_approval_buttons.add_item(request_btn_deny)
 
-    sent_message = await guild.get_channel(int(channels["member_log"])).send(embed=request_embed,
-                                                                             view=request_approval_buttons)
+    request_embed = verify.get_embed_by_name("verify_request", requester_vs.to_dict())
 
-    requests[sent_message] = (requester, group, info)
+    request_approval_buttons.timeout = None
+    my_bot.add_view(request_approval_buttons)
 
-
-async def handle_approval(interact):
-    global guild
-    global requests
-    global roles
-    interaction_message = interact.message
-    embed_to_edit = interaction_message.embeds[0]
-    user_tuple = requests[interaction_message]
-    if user_tuple is None:
-        await interact.response.send_message(content="This request didn't work. Please try again later!", ephemeral=True)
-        return
-
-    embed_to_edit.set_author(name="Approved!")
-    embed_to_edit.add_field(name="Approved By", value="%s#%s" % (interact.user.name, interact.user.discriminator),
-                            inline=False)
-    embed_to_edit.colour = discord.Colour(3066993)
-
-    await interact.response.edit_message(embed=embed_to_edit, view=None)
-    member = user_tuple[0]
-    await member.remove_roles(guild.get_role(roles["pending"]))
-    if user_tuple[1] == "guest":
-        await member.add_roles(guild.get_role(roles["guest"]))
-        await verify.guest_issue(member, True)
-    elif user_tuple[1] == "alum":
-        await member.add_roles(guild.get_role(roles["alum"]))
-        await verify.alum_verify(member, True)
-    elif user_tuple[1] == "prosp":
-        await member.add_roles(guild.get_role(roles["prospective"]))
-        await member.add_roles(guild.get_role(roles[verify.year_prospective]))
-    del requests[interaction_message]
-
-
-async def handle_deny(interact):
-    global guild
-    global requests
-    global roles
-    interaction_message = interact.message
-    embed_to_edit = interaction_message.embeds[0]
-    user_tuple = requests[interaction_message]
-    if user_tuple is None:
-        await interact.response.send_message(content="This request didn't work. Please try again later!",
-                                             ephemeral=True)
-        return
-
-    embed_to_edit.set_author(name="Denied!")
-    embed_to_edit.add_field(name="Denied By", value="%s#%s" % (interact.user.name, interact.user.discriminator),
-                            inline=False)
-    embed_to_edit.colour = discord.Colour(15158332)
-
-    await interact.response.edit_message(embed=embed_to_edit, view=None)
-    member = guild.get_member(user_tuple[0])
-
-    if user_tuple[1] == "guest":
-        await verify.guest_issue(member, False)
-    elif user_tuple[1] == "alum":
-        await verify.alum_verify(member, False)
-    elif user_tuple[1] == "prosp":
-        # TODO
-        pass
-
-    del requests[interaction_message]
+    guild.get_channel(int(channels["member_log"])).send(embed=request_embed, view=request_approval_buttons)
 
 
 async def user_left(member):
