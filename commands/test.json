@@ -1,0 +1,30 @@
+{
+        "name": "test",
+        "description": "Tests things for Iggy!",
+        "options": [
+            {
+                "name": "type",
+                "description": "Dictates which test you would like to run.",
+                "type": 3,
+                "required": true,
+                "choices": [
+                    {
+                        "name": "Verify",
+                        "value": "verify"
+                    },
+                    {
+                        "name": "Reactions",
+                        "value": "react"
+                    },
+                    {
+                        "name": "Welcome Message",
+                        "value": "welcome"
+                    },
+                    {
+                        "name": "Graduation Count",
+                        "value": "graduate"
+                    }
+                ]
+            }
+        ]
+    }

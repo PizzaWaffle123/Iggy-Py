@@ -1,0 +1,38 @@
+{
+        "name": "poll",
+        "description": "Allows you to create polls!",
+        "options": [
+          {
+            "name": "create",
+            "type": 1,
+            "description": "Create a poll.",
+            "options": [
+                {
+                    "name": "prompt",
+                    "description": "Specify the prompt for users to respond to.",
+                    "type": 3,
+                    "required": true
+                },
+                {
+                    "name": "options",
+                    "description": "Specify the poll options, each separated with a pipe (|).",
+                    "type": 3,
+                    "required": true
+                }
+            ]
+          },
+          {
+            "name": "end",
+            "type": 1,
+            "description": "End the specified poll.",
+            "options": [
+              {
+                "name": "poll_id",
+                "description": "The ID of the poll you want to end.",
+                "type": 3,
+                "required": true
+              }
+            ]
+          }
+        ]
+    }

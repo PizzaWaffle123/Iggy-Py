@@ -1,0 +1,12 @@
+{
+        "name": "embed",
+        "description": "Spawn an embed by name.",
+        "options": [
+            {
+                "name": "name",
+                "description": "The name of the embed you'd like to print.",
+                "type": 3,
+                "required": true
+            }
+        ]
+    }
