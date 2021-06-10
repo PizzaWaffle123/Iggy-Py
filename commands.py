@@ -58,6 +58,15 @@ async def handle(interaction, bot):
                 await interaction.followup.send(content="Poll ended!")
             else:
                 await interaction.followup.send(content="Unable to end poll - did you type the ID correctly?")
+    elif interaction.data["name"] == "count":
+        resp_embed = discord.Embed()
+        resp_embed.title = "SERVER COUNT"
+        resp_embed.description = "%d" % cgh.count_members()
+        resp_embed.colour = discord.Colour(4171755)
+        await interaction.followup.send(embed=resp_embed)
+    elif interaction.data["name"] == "graduate":
+        sen_count = await cgh.graduate_users(str(datetime.now().year))
+        await interaction.followup.send("Graduated Seniors: %d" % sen_count)
 
 
 @commands.command()
@@ -77,17 +86,6 @@ async def test(ctx, arg1):
     elif arg1 == "emailparse":
         myembed = verify.get_embed_by_name("stage3", "ejfear21@g.holycross.edu")
         await ctx.send(embed=myembed)
-
-
-@commands.command()
-async def count(ctx):
-    print("Heard count command!")
-    resp_embed = discord.Embed()
-    resp_embed.title = "SERVER COUNT"
-    resp_embed.description = "%d" % cgh.count_members()
-    resp_embed.colour = discord.Colour(4171755)
-
-    await ctx.send(embed=resp_embed)
 
 
 @commands.command()
