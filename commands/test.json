@@ -13,10 +13,6 @@
                         "value": "verify"
                     },
                     {
-                        "name": "Reactions",
-                        "value": "react"
-                    },
-                    {
                         "name": "Welcome Message",
                         "value": "welcome"
                     },
