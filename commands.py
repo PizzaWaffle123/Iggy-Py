@@ -6,14 +6,62 @@ from datetime import datetime
 import discord
 import verify
 import cgh
+import requests
+import polls
+import json as json
+import os
 
-command_counter = 0
+my_bot = None
+
+
+async def handle(interaction, bot):
+    global my_bot
+    my_bot = bot
+
+    print(interaction.data)
+    await interaction.response.defer(ephemeral=True)
+
+    if interaction.data["name"] == "test":
+        if interaction.data["options"][0]["value"] == "verify":
+            await verify.new_session(interaction.user)
+        await interaction.followup.send(content="Test command used!")
+    elif interaction.data["name"] == "embed":
+        arg1 = interaction.data["options"][0]["value"]
+        embed_to_print = verify.get_embed_by_name(arg1, "TestData")
+        if embed_to_print is None:
+            await interaction.followup.send("Embed not found!")
+        else:
+            await interaction.followup.send("Embed found! Printing...")
+            await interaction.channel.send(embed=embed_to_print)
+    elif interaction.data["name"] == "poll":
+        interaction_info = interaction.data["options"][0]
+        if interaction_info["name"] == "create":
+            prompt = interaction_info["options"][0]["value"]
+            options = interaction_info["options"][1]["value"].split("|")
+
+            poll_view = discord.ui.View()
+            for opt in options:
+                poll_view.add_item(discord.ui.Button(label=opt, style=discord.ButtonStyle.blurple, custom_id=opt))
+            for item in poll_view.children:
+                item.callback = polls.handle_interaction
+
+            poll_view.timeout = None
+            my_bot.add_view(poll_view)
+
+            poll_message = await interaction.channel.send(content="Generating poll...", view=poll_view)
+
+            await polls.track_new_poll(poll_message, options, prompt)
+            await interaction.followup.send(content="Poll created!")
+        elif interaction_info["name"] == "end":
+            poll_to_end = interaction_info["options"][0]["value"]
+            if await polls.end_poll(poll_to_end) is True:
+                await interaction.followup.send(content="Poll ended!")
+            else:
+                await interaction.followup.send(content="Unable to end poll - did you type the ID correctly?")
 
 
 @commands.command()
 async def test(ctx, arg1):
-    global command_counter
-    command_counter += 1
     print("Heard test command!")
     if arg1 == "verify":
         await verify.new_session(ctx.author)
@@ -33,27 +81,31 @@ async def test(ctx, arg1):
 
 @commands.command()
 async def count(ctx):
-    global command_counter
-    command_counter += 1
     print("Heard count command!")
     resp_embed = discord.Embed()
     resp_embed.title = "SERVER COUNT"
     resp_embed.description = "%d" % cgh.count_members()
-    resp_embed.color = discord.Colour(4171755)
+    resp_embed.colour = discord.Colour(4171755)
 
     await ctx.send(embed=resp_embed)
 
 
 @commands.command()
+async def threadstart(ctx):
+    global my_bot
+    print("We are starting a thread!")
+    await ctx.channel.set_permissions(my_bot.user, manage_threads=True, use_threads=True, use_private_threads=True)
+    await ctx.channel.start_thread(name="Test Thread", message=ctx.message, auto_archive_duration=1440)
+
+
+@commands.command()
 async def stats(ctx):
-    global command_counter
-    command_counter += 1
     print("Heard stats command!")
     resp_embed = discord.Embed()
-    resp_embed.color = discord.Colour(3066993)
+    resp_embed.colour = discord.Colour(3066993)
     resp_embed.title = "Current Server Statistics"
     resp_embed.add_field(name="Verified Members", value="%d" % cgh.count_members(), inline=True)
-    resp_embed.add_field(name="Commands Used", value="%d" % command_counter, inline=True)
+    resp_embed.add_field(name="Commands Used", value="%d" % -1, inline=True)
 
     await ctx.send(embed=resp_embed)
 
@@ -76,34 +128,33 @@ async def embed(ctx, arg1):
 
 
 @commands.command()
-async def button(ctx):
-    print("Testing button...")
-    test_button = discord.ui.Button(style=1, label="Test Label")
-    test_button_2 = discord.ui.Button(style=2, label="Test Label 2")
-    test_button_3 = discord.ui.Button(style=3, label="Test Label 3")
-    test_button_4 = discord.ui.Button(style=4, label="Test Label 4", custom_id="TestID-12345")
-    test_button_4.callback = button_test
+async def csetup(ctx):
+    # Runs registration of slash commands.
+    f = open("token.txt", "r")
+    bot_token = f.read()
+    url = "https://discord.com/api/v9/applications/771800207733686284/guilds/432940415432261653/commands"
+    headers = {
+        "Authorization": "Bot %s" % bot_token
+    }
 
-    test_view = discord.ui.View()
-    test_view.add_item(test_button)
-    test_view.add_item(test_button_2)
-    test_view.add_item(test_button_3)
-    test_view.add_item(test_button_4)
-
-    await ctx.send(content="Test Content!", view=test_view)
+    command_directory = "./commands"
+    for file in os.listdir(command_directory):
+        print(file)
+        file = "commands/" + file
+        with open(file) as jsonfile:
+            data = json.load(jsonfile)
+            r = requests.post(url, headers=headers, json=data)
+            print("Received Status Code: %d" % r.status_code)
 
 
 def setup(bot):
-    bot.add_command(test)
-    bot.add_command(count)
-    bot.add_command(stats)
-    bot.add_command(graduate)
-    bot.add_command(embed)
-    bot.add_command(button)
+    global my_bot
+    bot.add_command(csetup)
+    bot.add_command(threadstart)
+    my_bot = bot
+    print("Setup completed successfully!")
+    print(my_bot)
 
 
-async def button_test(interaction):
-    print(interaction)
-    print(interaction.data['custom_id'])
-    await interaction.response.edit_message(content=interaction.data['custom_id'])
+
 
