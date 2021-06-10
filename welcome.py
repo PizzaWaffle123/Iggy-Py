@@ -1,6 +1,3 @@
-# VERSION 3.0 UPGRADE PROJECT
-# STATUS: COMPLETE (Ready For 3.0)
-
 import random
 import discord
 import cgh

@@ -1,5 +1,3 @@
-# VERSION 3.0 UPGRADE PROJECT
-# STATUS: IN PROGRESS
 import time
 
 from discord.ext import commands
@@ -82,62 +80,6 @@ async def handle(interaction, bot):
 
 
 @commands.command()
-async def test(ctx, arg1):
-    print("Heard test command!")
-    if arg1 == "verify":
-        await verify.new_session(ctx.author)
-    elif arg1 == "react":
-        await ctx.message.add_reaction("\U0001f7e9")
-        await ctx.message.add_reaction("\U0001f7e5")
-        await ctx.message.add_reaction('👍')
-    elif arg1 == "welcome":
-        await cgh.welcome_message(ctx.author)
-    elif arg1 == "graduate":
-        sen_count = await cgh.count_seniors(str(datetime.now().year))
-        await ctx.send("Eligible Seniors: %d" % sen_count)
-    elif arg1 == "emailparse":
-        myembed = verify.get_embed_by_name("stage3", "ejfear21@g.holycross.edu")
-        await ctx.send(embed=myembed)
-
-
-@commands.command()
-async def threadstart(ctx):
-    global my_bot
-    print("We are starting a thread!")
-    await ctx.channel.set_permissions(my_bot.user, manage_threads=True, use_threads=True, use_private_threads=True)
-    await ctx.channel.start_thread(name="Test Thread", message=ctx.message, auto_archive_duration=1440)
-
-
-@commands.command()
-async def stats(ctx):
-    print("Heard stats command!")
-    resp_embed = discord.Embed()
-    resp_embed.colour = discord.Colour(3066993)
-    resp_embed.title = "Current Server Statistics"
-    resp_embed.add_field(name="Verified Members", value="%d" % cgh.count_members(), inline=True)
-    resp_embed.add_field(name="Commands Used", value="%d" % -1, inline=True)
-
-    await ctx.send(embed=resp_embed)
-
-
-@commands.command(name="register")
-async def role_reg(ctx, arg1, arg2):
-    pass
-
-
-@commands.command()
-async def graduate(ctx):
-    sen_count = await cgh.graduate_users(str(datetime.now().year))
-    await ctx.send("Graduated Seniors: %d" % sen_count)
-
-
-@commands.command()
-async def embed(ctx, arg1):
-    embed_to_print = verify.get_embed_by_name(arg1, "TestData")
-    await ctx.send(embed=embed_to_print)
-
-
-@commands.command()
 async def csetup(ctx):
     # Runs registration of slash commands.
     await ctx.send(content="Attemtping to register slash commands...")
@@ -187,7 +129,6 @@ async def csetup(ctx):
 def setup(bot):
     global my_bot
     bot.add_command(csetup)
-    bot.add_command(threadstart)
     my_bot = bot
     print("Setup completed successfully!")
     print(my_bot)

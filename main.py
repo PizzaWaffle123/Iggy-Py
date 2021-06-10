@@ -1,7 +1,6 @@
 import discord
 import cgh
 import polls
-import welcome
 import verify
 from discord.ext import commands
 import commands as iggycommands

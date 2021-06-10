@@ -4,10 +4,7 @@ import os
 import smtplib
 import ssl
 import random
-import threading
 from datetime import datetime
-from discord.ext import tasks
-import time
 
 import discord
 import json
