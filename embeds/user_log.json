@@ -1,0 +1,24 @@
+{
+      "author": {
+        "name": "New Verified User"
+      },
+      "title": "{username}",
+      "fields": [
+        {
+          "name": "Group",
+          "value": "{friendly_group}",
+          "inline": true
+        },
+        {
+          "name": "Class Year",
+          "value": "{classyear}",
+          "inline": true
+        },
+        {
+          "name": "{infotitle}",
+          "value": "{info}",
+          "inline": true
+        }
+      ],
+      "color": 10444272
+    }
