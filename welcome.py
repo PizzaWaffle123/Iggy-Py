@@ -30,7 +30,10 @@ welcome_titles = [
     "HEY - YOU'RE FINALLY AWAKE",
     "SO - WHO'S READY TO MAKE SOME SCIENCE?",
     "KIROV REPORTING",
-    "AIN'T THAT A KICK IN THE HEAD"
+    "AIN'T THAT A KICK IN THE HEAD",
+    "LEVEL UP: {count}",
+    "HI THERE NEIGHBOR",
+    "WE'VE BEEN EXPECTING YOU, {name}"
 ]
 
 # Note: Anywhere that {count} is shown will be formatted out to include the count parameter in the get_welcome_embed
@@ -48,7 +51,8 @@ welcome_bodies = [
     "{count} members? That's crazy!",
     "{count} members? That's actually insane!",
     "Welcome welcome Number {count}!",
-    "Our {ordinal} member!"
+    "Our {ordinal} member!",
+    "{name}, Rush Chairman, damn glad to meet ya!"
 ]
 
 
@@ -57,16 +61,23 @@ def get_welcome_embed(member):
     # Working with embeds is really fun and should be self-explanatory.
     embed = discord.Embed()
     embed.colour = discord.Colour(10444272)
+
+    formatting_dictionary = {"count": cgh.count_members(),
+                             "ordinal": ordinal(cgh.count_members()),
+                             "name": member.name}
+
     title = random.choice(welcome_titles)
+    title = title.format(**formatting_dictionary)
+
     body = random.choice(welcome_bodies)
-    body = body.format(count=cgh.count_members(), ordinal=ordinal(cgh.count_members()))
+    body = body.format(**formatting_dictionary)
 
     body = body + "\n\n**Profile: {}**".format(member.mention)
 
     embed.title = title
     full_name = member.name + "#" + member.discriminator
     embed.add_field(name=full_name, value=body, inline=False)
-    embed.set_thumbnail(url=member.avatar_url)
+    embed.set_thumbnail(url=member.avatar.url)
 
     return embed
 
