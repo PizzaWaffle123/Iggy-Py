@@ -90,7 +90,7 @@ async def on_message(message):
 
 
 # Sets the status of the bot, visible in user sidebar.
-bot.activity = discord.Activity(name="Version 3.0-TEST", type=discord.ActivityType.competing)
+bot.activity = discord.Activity(name="Version 3.0", type=discord.ActivityType.competing)
 # Starts the bot.
 f = open("token.txt", "r")
 bot_token = f.read()
