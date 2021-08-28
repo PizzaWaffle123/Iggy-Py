@@ -88,7 +88,6 @@ async def on_message(message):
     else:
         await bot.process_commands(message)
 
-
 # Sets the status of the bot, visible in user sidebar.
 bot.activity = discord.Activity(name="Version 3.0", type=discord.ActivityType.competing)
 # Starts the bot.
