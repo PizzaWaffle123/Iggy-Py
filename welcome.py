@@ -49,7 +49,9 @@ welcome_bodies = [
     "{count} members? That's actually insane!",
     "Welcome welcome Number {count}!",
     "Our {ordinal} member!",
-    "{name}, Rush Chairman, damn glad to meet ya!"
+    "{name}, Rush Chairman, damn glad to meet ya!",
+    "Yep. {count}! That's what is says on the sheet.",
+    "{count} members? That's a lot of people!"
 ]
 
 
