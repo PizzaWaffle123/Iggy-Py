@@ -1,6 +1,5 @@
 import time
 
-from discord.ext import commands
 from datetime import datetime
 import discord
 import verify
@@ -8,7 +7,6 @@ import cgh
 import requests
 import polls
 import json as json
-import os
 
 import welcome
 
@@ -79,59 +77,31 @@ async def handle(interaction, bot):
         await interaction.followup.send("Graduated Seniors: %d" % sen_count)
 
 
-@commands.command()
-async def csetup(ctx):
-    # Runs registration of slash commands.
-    await ctx.send(content="Attemtping to register slash commands...")
-    f = open("token.txt", "r")
-    bot_token = f.read()
-    url = "https://discord.com/api/v9/applications/771800207733686284/guilds/432940415432261653/commands"
-    headers = {
-        "Authorization": "Bot %s" % bot_token
-    }
+# Runs registration of slash commands.
+f = open("token.txt", "r")
+bot_token = f.read()
+url = "https://discord.com/api/v9/applications/771800207733686284/guilds/432940415432261653/commands"
+headers = {
+    "Authorization": "Bot %s" % bot_token
+}
 
-    command_directory = "./commands"
-    command_queue = []
-    for file in os.listdir(command_directory):
-        print(file)
-        file = "commands/" + file
-        command_queue.append(file)
+with open("./config/commands.json") as commfile:
+    data = json.load(commfile)
+    r = requests.put(url, headers=headers, json=data)
+    print("Received Status Code: %d" % r.status_code)
+    if r.status_code in [200, 201]:
+        print("Success!")
+    else:
+        print("Error!")
+    print(r.text)
 
-    while command_queue:
-        print("Current Command Queue:")
-        print(command_queue)
-        rate_limit_time = 4
-        for file in command_queue:
-            with open(file) as jsonfile:
-                data = json.load(jsonfile)
-                r = requests.post(url, headers=headers, json=data)
-                print("Received Status Code: %d" % r.status_code)
-                if r.status_code in [200, 201]:
-                    command_queue.remove(file)
-                    print("Added command successfully!")
-                    await ctx.send(content="Added command: %s" % file)
-                if r.status_code == 429:
-                    # We are being rate limited.
-                    rate_limit_dict = json.loads(r.content)
-                    print(r.content)
-                    rate_limit_time = float(rate_limit_dict["retry_after"])
-        time.sleep(int(rate_limit_time) + 1)
-
-    await ctx.send(content="Added all commands!")
-
-    with open("./config/permissions.json") as permfile:
-        data = json.load(permfile)
-        r = requests.put(url + "/permissions", headers=headers, json=data)
-        print("[PERMS] Received Status Code: %d" % r.status_code)
-        print(r.content)
+with open("./config/permissions.json") as permfile:
+    data = json.load(permfile)
+    r = requests.put(url + "/permissions", headers=headers, json=data)
+    print("[PERMS] Received Status Code: %d" % r.status_code)
+    print(r.content)
 
 
-def setup(bot):
-    global my_bot
-    bot.add_command(csetup)
-    my_bot = bot
-    print("Setup completed successfully!")
-    print(my_bot)
 
 
 
