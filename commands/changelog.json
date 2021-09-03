@@ -1,5 +1,0 @@
-{
-        "name": "changelog",
-        "description": "Views the most recent changelog for Iggy.",
-        "default_permission": true
-    }
