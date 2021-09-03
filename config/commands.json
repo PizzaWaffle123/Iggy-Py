@@ -1,0 +1,96 @@
+[
+      {
+        "name": "count",
+        "description": "Returns the count of verified users in the server.",
+        "default_permission": false
+    },
+    {
+        "name": "changelog",
+        "description": "Views the most recent changelog for Iggy.",
+        "default_permission": true
+    },
+  {
+        "name": "embed",
+        "description": "Spawn an embed by name.",
+        "options": [
+            {
+                "name": "name",
+                "description": "The name of the embed you'd like to print.",
+                "type": 3,
+                "required": true
+            }
+        ],
+        "default_permission": false
+    },
+  {
+        "name": "graduate",
+        "description": "Converts all eligible students into Alumni.",
+        "default_permission": false
+    },
+  {
+        "name": "poll",
+        "description": "Allows you to create polls!",
+        "options": [
+          {
+            "name": "create",
+            "type": 1,
+            "description": "Create a poll.",
+            "options": [
+                {
+                    "name": "prompt",
+                    "description": "Specify the prompt for users to respond to.",
+                    "type": 3,
+                    "required": true
+                },
+                {
+                    "name": "options",
+                    "description": "Specify the poll options, each separated with a pipe (|).",
+                    "type": 3,
+                    "required": true
+                }
+            ]
+          },
+          {
+            "name": "end",
+            "type": 1,
+            "description": "End the specified poll.",
+            "options": [
+              {
+                "name": "poll_id",
+                "description": "The ID of the poll you want to end.",
+                "type": 3,
+                "required": true
+              }
+            ]
+          }
+        ],
+        "default_permission": false
+    },
+  {
+        "name": "test",
+        "description": "Tests things for Iggy!",
+        "options": [
+            {
+                "name": "type",
+                "description": "Dictates which test you would like to run.",
+                "type": 3,
+                "required": true,
+                "choices": [
+                    {
+                        "name": "Verify",
+                        "value": "verify"
+                    },
+                    {
+                        "name": "Welcome Message",
+                        "value": "welcome"
+                    },
+                    {
+                        "name": "Graduation Count",
+                        "value": "graduate"
+                    }
+                ]
+            }
+        ],
+        "default_permission": false
+    }
+]
