@@ -152,5 +152,56 @@
       }
     ],
     "default_permission": false
+  },
+  {
+    "name": "deny",
+    "description": "Deny a suggestion.",
+    "options": [
+      {
+        "name": "id",
+        "description": "The number of the suggestion being denied.",
+        "type": 4,
+        "required": true
+      },
+      {
+        "name": "comment",
+        "description": "Comment for denial.",
+        "type": 3,
+        "required": false
+      }
+    ],
+    "default_permission": false
+  },
+  {
+    "name": "implement",
+    "description": "Mark a suggestion as implemented.",
+    "options": [
+      {
+        "name": "id",
+        "description": "The number of the suggestion being implemented",
+        "type": 4,
+        "required": true
+      },
+      {
+        "name": "comment",
+        "description": "Comment for implementation.",
+        "type": 3,
+        "required": false
+      }
+    ],
+    "default_permission": false
+  },
+  {
+    "name": "delete",
+    "description": "Delete a suggestion.",
+    "options": [
+      {
+        "name": "id",
+        "description": "The number of the suggestion being deleted.",
+        "type": 4,
+        "required": true
+      }
+    ],
+    "default_permission": false
   }
 ]
