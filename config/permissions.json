@@ -1,102 +1,19 @@
-[
-    {
-        "name": "count",
-        "permissions": [
-            {
-                "id": 432940942425587712,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 681213070592573481,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 883452941661511741,
-                "type": 1,
-                "permission": true
-            }
-        ]
-    },
-    {
-        "name": "embed",
-        "permissions": [
-            {
-                "id": 432940942425587712,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 681213070592573481,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 883452941661511741,
-                "type": 1,
-                "permission": true
-            }
-        ]
-    },
-    {
-        "name": "graduate",
-        "permissions": [
-            {
-                "id": 432940942425587712,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 681213070592573481,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 883452941661511741,
-                "type": 1,
-                "permission": true
-            }
-        ]
-    },
-    {
-        "name": "poll",
-        "permissions": [
-            {
-                "id": 432940942425587712,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 681213070592573481,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 883452941661511741,
-                "type": 1,
-                "permission": true
-            }
-        ]
-    },
-    {
-        "name": "test",
-        "permissions": [
-            {
-                "id": 432940942425587712,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 681213070592573481,
-                "type": 1,
-                "permission": true
-            },
-            {
-                "id": 883452941661511741,
-                "type": 1,
-                "permission": true
-            }
-        ]
-    }
-]
+{
+    "permissions": [
+        {
+            "id": 432940942425587712,
+            "type": 1,
+            "permission": true
+        },
+        {
+            "id": 681213070592573481,
+            "type": 1,
+            "permission": true
+        },
+        {
+            "id": 883452941661511741,
+            "type": 1,
+            "permission": true
+        }
+    ]
+}

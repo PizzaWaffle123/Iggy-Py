@@ -133,5 +133,24 @@
       }
     ],
     "default_permission": true
+  },
+  {
+    "name": "approve",
+    "description": "Approve a suggestion.",
+    "options": [
+      {
+        "name": "id",
+        "description": "The number of the suggestion being approved.",
+        "type": 4,
+        "required": true
+      },
+      {
+        "name": "comment",
+        "description": "Comment for approval.",
+        "type": 3,
+        "required": false
+      }
+    ],
+    "default_permission": false
   }
 ]
