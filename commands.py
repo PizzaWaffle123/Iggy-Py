@@ -75,45 +75,45 @@ async def handle(interaction, bot):
         await interaction.followup.send("Graduated Seniors: %d" % sen_count)
 
 
-# Runs registration of slash commands.
-f = open("token.txt", "r")
-bot_token = f.read()
-f = open("appid.txt", "r")
-app_id = f.read()
-url = f"https://discord.com/api/v9/applications/{app_id}/guilds/432940415432261653/commands"
-headers = {
-    "Authorization": "Bot %s" % bot_token
-}
+if __name__ == "__main__":
+    # Runs registration of slash commands.
+    f = open("token.txt", "r")
+    bot_token = f.read()
+    f = open("appid.txt", "r")
+    app_id = f.read()
+    url = f"https://discord.com/api/v9/applications/{app_id}/guilds/432940415432261653/commands"
+    headers = {
+        "Authorization": "Bot %s" % bot_token,
+        "Content-Type": "application/json"
+    }
 
-command_list = []
+    command_list = []
 
-with open("./config/commands.json") as commfile:
-    data = json.load(commfile)
-    r = requests.put(url, headers=headers, json=data)
-    print("Received Status Code: %d" % r.status_code)
-    if r.status_code in [200, 201]:
-        print("Success!")
-    else:
-        print("Error!")
-    print(r.text)
-    command_list = json.loads(r.text)
-
-with open("./config/permissions.json") as permfile:
-    data = json.load(permfile)
-    for perm in data:
-        print("Fixing permission for %s" % perm["name"])
+    with open("./config/commands.json") as commfile:
+        data = json.load(commfile)
+        r = requests.put(url, headers=headers, json=data)
+        print("Received Status Code: %d" % r.status_code)
+        if r.status_code in [200, 201]:
+            print("Success!")
+        else:
+            print("Error!")
+        print(r.text)
+        command_list = json.loads(r.text)
         for comm in command_list:
-            print("Checking comm %s" % comm["name"])
-            if comm["name"] == perm["name"]:
-                perm["id"] = comm["id"]
-                perm["name"] = None
-                print("Fixed with id %s" % perm["id"])
-                break
+            if comm["default_permission"] is True:
+                command_list.remove(comm)
 
-    r = requests.put(url + "/permissions", headers=headers, json=data)
-    print("[PERMS] Received Status Code: %d" % r.status_code)
-    print(r.content)
+    with open("./config/permissions.json") as permfile:
+        template_data = json.load(permfile)
+        data = []
+        for comm in command_list:
+            perm = template_data.copy()
+            perm["id"] = comm["id"]
+            data.append(perm)
 
+        r = requests.put(url + "/permissions", headers=headers, json=data)
+        print("[PERMS] Received Status Code: %d" % r.status_code)
+        print(r.content)
 
 
 
