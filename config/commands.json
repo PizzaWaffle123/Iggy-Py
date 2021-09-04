@@ -92,5 +92,46 @@
             }
         ],
         "default_permission": false
-    }
+    },
+  {
+    "name": "suggest",
+    "description": "Make a suggestion!",
+    "options": [
+      {
+        "name": "category",
+        "description": "Select a category for your suggestion.",
+        "type": 3,
+        "required": true,
+        "choices": [
+          {
+            "name": "Discord Server",
+            "value": "discord"
+          },
+          {
+            "name": "Esports",
+            "value": "esports"
+          },
+          {
+            "name": "Club Event",
+            "value": "club-event"
+          },
+          {
+            "name": "Virtual Event",
+            "value": "virtual-event"
+          },
+          {
+            "name": "Other",
+            "value": "other"
+          }
+        ]
+      },
+      {
+        "name": "suggestion",
+        "description": "Type your suggestion!",
+        "type": 3,
+        "required": true
+      }
+    ],
+    "default_permission": true
+  }
 ]
