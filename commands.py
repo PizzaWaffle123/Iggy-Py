@@ -1,5 +1,3 @@
-import time
-
 from datetime import datetime
 import discord
 import verify
@@ -80,10 +78,14 @@ async def handle(interaction, bot):
 # Runs registration of slash commands.
 f = open("token.txt", "r")
 bot_token = f.read()
-url = "https://discord.com/api/v9/applications/771800207733686284/guilds/432940415432261653/commands"
+f = open("appid.txt", "r")
+app_id = f.read()
+url = f"https://discord.com/api/v9/applications/{app_id}/guilds/432940415432261653/commands"
 headers = {
     "Authorization": "Bot %s" % bot_token
 }
+
+command_list = []
 
 with open("./config/commands.json") as commfile:
     data = json.load(commfile)
@@ -94,9 +96,20 @@ with open("./config/commands.json") as commfile:
     else:
         print("Error!")
     print(r.text)
+    command_list = json.loads(r.text)
 
 with open("./config/permissions.json") as permfile:
     data = json.load(permfile)
+    for perm in data:
+        print("Fixing permission for %s" % perm["name"])
+        for comm in command_list:
+            print("Checking comm %s" % comm["name"])
+            if comm["name"] == perm["name"]:
+                perm["id"] = comm["id"]
+                perm["name"] = None
+                print("Fixed with id %s" % perm["id"])
+                break
+
     r = requests.put(url + "/permissions", headers=headers, json=data)
     print("[PERMS] Received Status Code: %d" % r.status_code)
     print(r.content)
