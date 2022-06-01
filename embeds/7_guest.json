@@ -1,8 +1,0 @@
-{
-      "author": {
-        "name": "Guest Pass Denied"
-      },
-      "title": "Server staff has denied your request for a guest pass.",
-      "description": "This channel will be automatically deleted in 30 seconds.\n\nFollowing the deletion of this channel, you will be kicked from the server.",
-      "color": 15158332
-    }
