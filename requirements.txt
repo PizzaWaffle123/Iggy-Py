@@ -1,1 +1,4 @@
 git+https://github.com/Rapptz/discord.py.git
+mysql>=0.0.3
+mysql-connector-python>=8.0.29
+python-dotenv>=0.20.0
