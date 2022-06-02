@@ -25,7 +25,10 @@ async def on_message(message):
         return
 
     if message.content.startswith("$hello"):
-        await message.channel.send("Hello!")
+        await message.channel.send("[%s] Hello!" % os.getenv("environment_name"))
+    elif message.content.startswith("$exit"):
+        await message.channel.send("[%s] Ending connection..." % os.getenv("environment_name"))
+        await client.close()
 
 if __name__ == "__main__":
 
@@ -43,4 +46,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
     client.run(token)
-    print("Hello world!")
