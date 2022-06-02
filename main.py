@@ -1,4 +1,8 @@
+import sys
+
 import discord
+from dotenv import load_dotenv
+import os
 
 test_mode = True
 
@@ -25,10 +29,18 @@ async def on_message(message):
 
 if __name__ == "__main__":
 
-    token_path = "token_test.txt" if test_mode else "token_main.txt"
+    load_dotenv()
 
-    with open(token_path) as fs:
-        token = fs.read()
+    if os.getenv("mode") == "test":
+        token = os.getenv("token_test")
+    elif os.getenv("mode") == "prod":
+        token = os.getenv("token_main")
+    else:
+        print("ERROR: No mode specified!")
+        sys.exit(1)
+    if token is None:
+        print("ERROR: No token found!")
+        sys.exit(1)
 
     client.run(token)
     print("Hello world!")
