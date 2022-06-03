@@ -47,18 +47,19 @@ async def on_message(message):
 async def on_interaction(interaction):
     # Oh god oh fuck.
     print("Heard an interaction!")
-    print(interaction)
-    print(interaction.id)
-    print(interaction.data)
+    match interaction.type:
+        case discord.InteractionType.modal_submit:
+            # A modal was submitted.
+            print("Modal submission!")
+        case discord.InteractionType.application_command:
+            # A command or context action was used.
+            match interaction.data["name"]:
+                case "welcome":
+                    await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user)])
+                case "sql":
+                    query = interaction.data["options"][0]["value"]
+                    await interaction.response.send_message(database.raw_query(query))
 
-    match interaction.data["name"]:
-        case "welcome":
-            await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user)])
-        case "sql":
-            query = interaction.data["options"][0]["value"]
-            await interaction.response.send_message(database.raw_query(query))
-
-    # Handle the interaction somewhere.
 
 if __name__ == "__main__":
 
