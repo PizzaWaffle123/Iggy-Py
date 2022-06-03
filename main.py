@@ -4,6 +4,8 @@ import discord
 from dotenv import load_dotenv
 import os
 
+import database
+
 test_mode = True
 
 intents = discord.Intents.default()
@@ -29,6 +31,10 @@ async def on_message(message):
     elif message.content.startswith("$exit"):
         await message.channel.send("[%s] Ending connection..." % os.getenv("environment_name"))
         await client.close()
+    elif message.content.startswith("$sql"):
+        pieces = message.content.split(" ", 1)
+        data = database.raw_query(pieces[1])
+        await message.channel.send(data)
 
 if __name__ == "__main__":
 
