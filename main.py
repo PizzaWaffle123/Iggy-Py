@@ -6,6 +6,7 @@ import os
 
 import database
 import directory
+import welcome
 
 test_mode = True
 
@@ -40,6 +41,24 @@ async def on_message(message):
         pieces = message.content.split(" ", 1)
         data = directory.get_user(pieces[1])
         await message.channel.send(data)
+
+
+@client.event
+async def on_interaction(interaction):
+    # Oh god oh fuck.
+    print("Heard an interaction!")
+    print(interaction)
+    print(interaction.id)
+    print(interaction.data)
+
+    match interaction.data["name"]:
+        case "welcome":
+            await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user)])
+        case "sql":
+            query = interaction.data["options"][0]["value"]
+            await interaction.response.send_message(database.raw_query(query))
+
+    # Handle the interaction somewhere.
 
 if __name__ == "__main__":
 
