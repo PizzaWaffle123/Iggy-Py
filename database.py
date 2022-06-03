@@ -4,32 +4,44 @@ import os
 from dotenv import load_dotenv
 
 database = None
-db_cursor = None
 
 
 def init_db():
     global database
-    global db_cursor
-    if database is None:
-        database = mysql.connector.connect(
-            host=os.getenv("db_address"),
-            user=os.getenv("db_username"),
-            password=os.getenv("db_password"),
-            database=os.getenv("db_name")
-        )
-
-    db_cursor = database.cursor()
+    database = mysql.connector.connect(
+        host=os.getenv("db_address"),
+        user=os.getenv("db_username"),
+        password=os.getenv("db_password"),
+        database=os.getenv("db_name")
+    )
 
 
 def raw_query(query):
+    global database
     init_db()
+
+    db_cursor = database.cursor()
     db_cursor.execute(query)
-    return db_cursor.fetchall()
+    data = db_cursor.fetchall()
+    db_cursor.close()
+    database.close()
+
+    return data
+
+
+def count_table(table_name):
+    data = raw_query(f"SELECT COUNT(*) FROM {table_name}")
+    data = data[0][0]
+    return int(data)
+
+
+def random_entry(table_name):
+    data = raw_query(f"SELECT * FROM {table_name} ORDER BY RAND() LIMIT 1")
+    data = data[0][1]
+    return data
 
 
 if __name__ == "__main__":
     load_dotenv()
     print("Testing database access...")
-    result = raw_query("SELECT * FROM students WHERE grad_year < 2022")
-    print("For this test, should return all students gradyear 2021 or before.")
-    print(result)
+    random_entry("welcome_titles")
