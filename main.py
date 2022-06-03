@@ -40,13 +40,8 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    if os.getenv("mode") == "test":
-        token = os.getenv("token_test")
-    elif os.getenv("mode") == "prod":
-        token = os.getenv("token_main")
-    else:
-        print("ERROR: No mode specified!")
-        sys.exit(1)
+    token = os.getenv("token")
+
     if token is None:
         print("ERROR: No token found!")
         sys.exit(1)
