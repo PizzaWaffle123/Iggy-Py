@@ -23,6 +23,7 @@ def raw_query(query):
     db_cursor = database.cursor()
     db_cursor.execute(query)
     data = db_cursor.fetchall()
+    database.commit()
     db_cursor.close()
     database.close()
 
