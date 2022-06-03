@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 
 import database
+import directory
 
 test_mode = True
 
@@ -34,6 +35,10 @@ async def on_message(message):
     elif message.content.startswith("$sql"):
         pieces = message.content.split(" ", 1)
         data = database.raw_query(pieces[1])
+        await message.channel.send(data)
+    elif message.content.startswith("$whois"):
+        pieces = message.content.split(" ", 1)
+        data = directory.get_user(pieces[1])
         await message.channel.send(data)
 
 if __name__ == "__main__":
