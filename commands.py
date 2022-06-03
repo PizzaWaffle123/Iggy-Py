@@ -14,12 +14,17 @@ if __name__ == "__main__":
         data = json.loads(data)
 
     app_id = os.getenv("app_id")
-    api_url = f"https://discord.com/api/v10/applications/{app_id}/commands"
+    api_url = f"https://discord.com/api/v10/applications/{app_id}"
+
+    api_url += "/guilds/981646409176588308" # COMMENT THIS LINE OUT FOR PROD
+
+    api_url += "/commands"
+
 
     token = os.getenv("token")
     headers = {
         "Authorization": f"Bot {token}"
     }
 
-    r = requests.post(url=api_url, headers=headers, json=data)
+    r = requests.put(url=api_url, headers=headers, json=data)
     print(r.content)
