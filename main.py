@@ -41,7 +41,7 @@ async def on_message(message):
         help_embed.add_field(name="sql",
                              value="User can enter SQL code to retrieve data.",
                              inline=False)
-        help_embed.add_field(name="sql",
+        help_embed.add_field(name="whois",
                              value="Retrieve information about a user.",
                              inline=False)
         await message.channel.send(embed=help_embed)
