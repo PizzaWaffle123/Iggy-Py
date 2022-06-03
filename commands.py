@@ -20,7 +20,6 @@ if __name__ == "__main__":
 
     api_url += "/commands"
 
-
     token = os.getenv("token")
     headers = {
         "Authorization": f"Bot {token}"
