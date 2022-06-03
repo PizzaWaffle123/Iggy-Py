@@ -27,8 +27,25 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-
-    if message.content.startswith("$hello"):
+    if message.content.startswith("$help"):
+        help_embed = discord.Embed(title="Commands", description="", color=0xb26aff)
+        help_embed.add_field(name="help",
+                             value="List all available commands.",
+                             inline=False)
+        help_embed.add_field(name="hello",
+                             value="Dev says hello!",
+                             inline=False)
+        help_embed.add_field(name="exit",
+                             value="Dev ends all connections.",
+                             inline=False)
+        help_embed.add_field(name="sql",
+                             value="User can enter SQL code to retrieve data.",
+                             inline=False)
+        help_embed.add_field(name="sql",
+                             value="Retrieve information about a user.",
+                             inline=False)
+        await message.channel.send(embed=help_embed)
+    elif message.content.startswith("$hello"):
         await message.channel.send("[%s] Hello!" % os.getenv("environment_name"))
     elif message.content.startswith("$exit"):
         await message.channel.send("[%s] Ending connection..." % os.getenv("environment_name"))
