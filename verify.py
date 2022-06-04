@@ -12,7 +12,7 @@ class student_modal(ui.Modal, title="Verify Your Identity"):
     intro = ui.TextInput(
         label="give us a brief intro (optional)",
         style=TextStyle.paragraph,
-        placeholder="Hey, my name is John! I'm a sophomore and play lots of Valorant and Minecraft. Let's game sometime!", 
+        placeholder="Hi, my name is John! I'm a sophomore and play lots of Valorant and Minecraft. Let's game sometime!", 
         required=False,
         max_length=200,
         )

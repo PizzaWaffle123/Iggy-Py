@@ -54,6 +54,8 @@ async def on_interaction(interaction):
             print("Modal submission!")
             email = interaction.data['components'][0]['components'][0]['value']
             intro = interaction.data['components'][1]['components'][0]['value']
+            print('Email: ', email)
+            print('Intro: ', intro)
         case discord.InteractionType.application_command:
             # A command or context action was used.
             match interaction.data["name"]:
