@@ -6,7 +6,7 @@ import os
 
 import database
 import directory
-from verify import student_modal
+from verify import student_email_modal
 import welcome
 
 test_mode = True
@@ -52,10 +52,6 @@ async def on_interaction(interaction):
         case discord.InteractionType.modal_submit:
             # A modal was submitted.
             print("Modal submission!")
-            email = interaction.data['components'][0]['components'][0]['value']
-            intro = interaction.data['components'][1]['components'][0]['value']
-            print('Email: ', email)
-            print('Intro: ', intro)
         case discord.InteractionType.application_command:
             # A command or context action was used.
             match interaction.data["name"]:
@@ -65,7 +61,7 @@ async def on_interaction(interaction):
                     query = interaction.data["options"][0]["value"]
                     await interaction.response.send_message(database.raw_query(query))
                 case "modal":
-                    await interaction.response.send_modal(student_modal())
+                    await interaction.response.send_modal(student_email_modal())
 
 
 if __name__ == "__main__":
