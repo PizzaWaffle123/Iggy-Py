@@ -7,10 +7,8 @@ database = None
 
 
 def init_db():
-    print("Initializing database...")
     load_dotenv()
     global database
-
 
     database = mysql.connector.connect(
         host=os.getenv("db_address"),
@@ -18,7 +16,6 @@ def init_db():
         password=os.getenv("db_password"),
         database=os.getenv("db_name")
     )
-    print("Database initialized.")
 
 
 def raw_query(query):
