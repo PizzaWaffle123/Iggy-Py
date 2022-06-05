@@ -7,7 +7,9 @@ database = None
 
 
 def init_db():
+    load_dotenv()
     global database
+
     database = mysql.connector.connect(
         host=os.getenv("db_address"),
         user=os.getenv("db_username"),

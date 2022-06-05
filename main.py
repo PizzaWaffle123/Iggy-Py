@@ -56,7 +56,8 @@ async def on_interaction(interaction):
             # A command or context action was used.
             match interaction.data["name"]:
                 case "welcome":
-                    await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user)])
+                    await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user,
+                                                                                              "Test introduction!")])
                 case "sql":
                     query = interaction.data["options"][0]["value"]
                     await interaction.response.send_message(database.raw_query(query))
