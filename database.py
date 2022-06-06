@@ -28,7 +28,6 @@ def raw_query(query):
     database.commit()
     db_cursor.close()
     database.close()
-
     return data
 
 
@@ -40,6 +39,13 @@ def count_table(table_name):
 
 def random_entry(table_name):
     data = raw_query(f"SELECT * FROM {table_name} ORDER BY RAND() LIMIT 1")
+    data = data[0][1]
+    return data
+
+
+def esports_roster(game=None):
+    if game : data = raw_query(f"SELECT esports.game, esports.position, students.name, students.username FROM esports NATURAL JOIN students WHERE esports.game LIKE '{game}'")
+    else : data = raw_query(f"SELECT esports.game, esports.position, students.name, students.username FROM esports NATURAL JOIN students")
     data = data[0][1]
     return data
 
