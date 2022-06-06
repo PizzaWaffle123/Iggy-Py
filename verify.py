@@ -46,7 +46,7 @@ def send_code(user_email, code):
         server.sendmail(email, user_email, local_message)
 
 
-class student_email_modal(ui.Modal, title="Student Verification"):
+class student_email_modal(ui.Modal, title="Student Verification: Email Address"):
 
     input = ui.TextInput(
         custom_id='email',
@@ -54,7 +54,7 @@ class student_email_modal(ui.Modal, title="Student Verification"):
         style=TextStyle.short,
         placeholder="jmsmit25@g.holycross.edu",
         required=True,
-        max_length=25,
+        max_length=24,
         )
 
     async def on_submit(self, interaction: Interaction):
@@ -68,7 +68,7 @@ class student_email_modal(ui.Modal, title="Student Verification"):
         await interaction.response.send_modal(student_code_modal())
 
 
-class student_code_modal(ui.Modal, title="Student Verification"):
+class student_code_modal(ui.Modal, title="Student Verification: Security Code"):
 
     input = ui.TextInput(
         custom_id='code',
@@ -89,9 +89,9 @@ class student_code_modal(ui.Modal, title="Student Verification"):
             await interaction.response.send_modal(student_intro_modal())
 
 
-class student_intro_modal(ui.Modal, title="Student Verification"):
+class student_intro_modal(ui.Modal, title="Student Verification: Introduction"):
 
-    intro = ui.TextInput(
+    input = ui.TextInput(
         custom_id='intro',
         label='finally, give us a brief intro (optional)',
         style=TextStyle.long,
