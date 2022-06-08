@@ -60,6 +60,7 @@ def identify_user(user_id):
         """
     return data
 
+
 if __name__ == "__main__":
     load_dotenv()
     print("Testing database access...")
