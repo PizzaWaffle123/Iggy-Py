@@ -1,29 +1,58 @@
-import json
+import discord
+import database
+import welcome as welc
 
-import requests as requests
 
-if __name__ == "__main__":
-    import os
-    from dotenv import load_dotenv
+@discord.app_commands.command(name="test", description="Tests things.")
+async def test(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        content="Test!"
+    )
 
-    load_dotenv()
-    # Transmits commands to Discord.
-    print("Sending commands...")
-    with open("commands.json", "r") as command_file:
-        data = command_file.read()
-        data = json.loads(data)
 
-    app_id = os.getenv("app_id")
-    api_url = f"https://discord.com/api/v10/applications/{app_id}"
+@discord.app_commands.command(name="sql", description="Submits a raw SQL query and returns the results.")
+@discord.app_commands.describe(query="Your raw SQL query.")
+async def sql(interaction: discord.Interaction, query: str):
+    print("Processing query...")
+    await interaction.response.send_message(database.raw_query(query))
 
-    api_url += "/guilds/981646409176588308" # COMMENT THIS LINE OUT FOR PROD
 
-    api_url += "/commands"
+@discord.app_commands.command(name="welcome", description="Generates a welcome embed.")
+async def welcome(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        embeds=[welc.get_welcome_embed(interaction.user, "Test introduction!")]
+    )
 
-    token = os.getenv("token")
-    headers = {
-        "Authorization": f"Bot {token}"
-    }
 
-    r = requests.put(url=api_url, headers=headers, json=data)
-    print(r.content)
+@discord.app_commands.command(name="modal", description="Supplies a modal to the user.")
+async def modal(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        content="Not ready yet!"
+    )
+
+
+@discord.app_commands.context_menu(name="Identify")
+async def ca_identify(interaction: discord.Interaction, user: discord.Member):
+    user_data = database.identify_user(user.id)
+    """
+        user_data now contains a 5-tuple with the following values:
+        - User ID
+        - User full name
+        - User grad year
+        - User email stub
+        - Username#Discriminator
+    """
+    data_embed = discord.Embed()
+    data_embed.set_author(name="User Information")
+    data_embed.title = user_data[4]
+    data_embed.add_field(name="Name", value=user_data[1])
+    data_embed.add_field(name="Class", value=user_data[2])
+    data_embed.add_field(name="Email", value=user_data[3] + "@g.holycross.edu", inline=False)
+    data_embed.set_thumbnail(url=user.avatar.url)
+
+    data_embed.colour = 16777215
+
+    await interaction.response.send_message(
+        ephemeral=True,
+        embeds=[data_embed]
+    )
