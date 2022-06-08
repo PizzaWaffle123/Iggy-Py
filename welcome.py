@@ -13,7 +13,7 @@ def get_welcome_embed(member, intro=None):
     embed = discord.Embed()
     embed.colour = discord.Colour(10444272)
 
-    count = database.count_table("students")
+    count = database.count_table("users")
     ordinal = ordinal_num(count)
     name = member.name
 
