@@ -84,12 +84,22 @@ async def on_interaction(interaction):
                                 - User email stub
                                 - Username#Discriminator
                             """
+                            data_embed = discord.Embed()
+                            data_embed.set_author(name="User Information")
+                            data_embed.title = user_data[4]
+                            data_embed.add_field(name="Name", value=user_data[1])
+                            data_embed.add_field(name="Graduation Year", value=user_data[2])
+                            data_embed.add_field(name="Email", value=user_data[3]+"@g.holycross.edu")
+
+                            data_embed.colour = 16777215
+
                             datastring = f"Name: {user_data[1]}\n" \
                                          f"Graduation Year: {user_data[2]}\n" \
                                          f"Email: {user_data[3]}@g.holycross.edu"
                             await interaction.response.send_message(
                                 ephemeral=True,
-                                content=datastring
+                                content=datastring,
+                                embeds=[data_embed]
                             )
                 case 3:
                     print("Context action - message!")
