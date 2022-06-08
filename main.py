@@ -52,14 +52,47 @@ async def on_interaction(interaction):
             # A modal was submitted.
             print("Modal submission!")
         case discord.InteractionType.application_command:
-            # A command or context action was used.
-            match interaction.data["name"]:
-                case "welcome":
-                    await interaction.response.send_message(embeds=[welcome.get_welcome_embed(interaction.user,
-                                                                                              "Test introduction!")])
-                case "sql":
-                    query = interaction.data["options"][0]["value"]
-                    await interaction.response.send_message(database.raw_query(query))
+            print("Application command!")
+            """
+            Within interaction.data is a type value of an integer. These values are:
+            1 - Slash Command.
+            2 - Context Action on User
+            3 - Context Action on Message
+            """
+            match interaction.data["type"]:
+                case 1:
+                    print("Slash command!")
+                    match interaction.data["name"]:
+                        case "welcome":
+                            await interaction.response.send_message(
+                                embeds=[welcome.get_welcome_embed(interaction.user, "Test introduction!")]
+                            )
+                        case "sql":
+                            query = interaction.data["options"][0]["value"]
+                            await interaction.response.send_message(database.raw_query(query))
+                case 2:
+                    print("Context action - user!")
+                    match interaction.data["name"].lower():
+                        case "identify":
+                            user_id = interaction.data["target_id"]
+                            user_data = database.identify_user(user_id)
+                            """
+                                user_data now contains a 5-tuple with the following values:
+                                - User ID
+                                - User full name
+                                - User grad year
+                                - User email stub
+                                - Username#Discriminator
+                            """
+                            datastring = f"Name: {user_data[1]}\n" \
+                                         f"Graduation Year: {user_data[2]}\n" \
+                                         f"Email: {user_data[3]}@g.holycross.edu"
+                            await interaction.response.send_message(
+                                ephemeral=True,
+                                content=datastring
+                            )
+                case 3:
+                    print("Context action - message!")
 
 
 if __name__ == "__main__":
