@@ -32,9 +32,21 @@ async def on_ready():
     ct.add_command(commands.welcome, guild=client.guilds[0])
     ct.add_command(commands.modal, guild=client.guilds[0])
 
-    # Step 2 - Context actions.
-    ct.add_command(commands.ca_identify, guild=client.guilds[0])
+    # Step 2 - User context actions.
+    ct.add_command(commands.ca_user_identify, guild=client.guilds[0])
+
+    # Step 3 - Message context actions.
+    ct.add_command(commands.ca_message_thumbs, guild=client.guilds[0])
+
+    # Step 4 - Synchronize.
     await ct.sync(guild=client.guilds[0])
+    count_slash = len(ct.get_commands(guild=client.guilds[0], type=discord.AppCommandType.chat_input))
+    count_ca_user = len(ct.get_commands(guild=client.guilds[0], type=discord.AppCommandType.user))
+    count_ca_message = len(ct.get_commands(guild=client.guilds[0], type=discord.AppCommandType.message))
+
+    print(f"Synchronized {count_slash} slash commands.")
+    print(f"Synchronized {count_ca_user} user context actions.")
+    print(f"Synchronized {count_ca_message} message context actions.")
 
 
 @client.event

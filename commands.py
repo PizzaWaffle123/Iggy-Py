@@ -32,7 +32,7 @@ async def modal(interaction: discord.Interaction):
 
 
 @discord.app_commands.context_menu(name="Identify")
-async def ca_identify(interaction: discord.Interaction, user: discord.Member):
+async def ca_user_identify(interaction: discord.Interaction, user: discord.Member):
     user_data = database.identify_user(user.id)
     """
         user_data now contains a 5-tuple with the following values:
@@ -55,4 +55,13 @@ async def ca_identify(interaction: discord.Interaction, user: discord.Member):
     await interaction.response.send_message(
         ephemeral=True,
         embeds=[data_embed]
+    )
+
+
+@discord.app_commands.context_menu(name="Thumbs")
+async def ca_message_thumbs(interaction: discord.Interaction, message: discord.Message):
+    await message.add_reaction("👍")
+    await interaction.response.send_message(
+        ephemeral=True,
+        content="Done!"
     )
