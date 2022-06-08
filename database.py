@@ -48,6 +48,8 @@ def identify_user(user_id):
     query = f"SELECT * FROM users WHERE user_id = \"{user_id}\""
     print(query)
     data = raw_query(query)
+    if len(data) == 0 or data is None:
+        return []
     data = data[0]
     print(data)
     """

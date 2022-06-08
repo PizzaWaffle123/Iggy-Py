@@ -44,12 +44,16 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
     """
     data_embed = discord.Embed()
     data_embed.set_author(name="User Information")
-    data_embed.title = user_data[4]
-    data_embed.add_field(name="Name", value=user_data[1])
-    data_embed.add_field(name="Class", value=user_data[2])
-    data_embed.add_field(name="Email", value=user_data[3] + "@g.holycross.edu", inline=False)
-    data_embed.set_thumbnail(url=user.avatar.url)
+    data_embed.title = f"{user.name}#{user.discriminator}"
 
+    if user_data is None or len(user_data) == 0:
+        data_embed.description = "No information available on this user!\n Please let the E-Board know!"
+    else:
+        data_embed.add_field(name="Name", value=user_data[1])
+        data_embed.add_field(name="Class", value=user_data[2])
+        data_embed.add_field(name="Email", value=user_data[3] + "@g.holycross.edu", inline=False)
+
+    data_embed.set_thumbnail(url=user.avatar.url)
     data_embed.colour = 16777215
 
     await interaction.response.send_message(
