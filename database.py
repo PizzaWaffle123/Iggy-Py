@@ -44,6 +44,22 @@ def random_entry(table_name):
     return data
 
 
+def identify_user(user_id):
+    query = f"SELECT * FROM users WHERE user_id = \"{user_id}\""
+    print(query)
+    data = raw_query(query)
+    data = data[0]
+    print(data)
+    """
+        Data now contains a 5-tuple with the following values:
+        - User ID
+        - User full name
+        - User grad year
+        - User email stub
+        - Username#Discriminator
+        """
+    return data
+
 if __name__ == "__main__":
     load_dotenv()
     print("Testing database access...")
