@@ -4,23 +4,37 @@ import discord
 from dotenv import load_dotenv
 import os
 
+import commands
 import database
 import directory
 import welcome
-
-test_mode = True
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
+ct = None
 
 
 @client.event
 async def on_ready():
+    global ct
     new_activity = discord.Game(name="around in Python...")
     print(f"Logged in as {client.user}")
     await client.change_presence(activity=new_activity)
+
+    # Synchronizes commands and binds them to local handlers.
+    ct = discord.app_commands.CommandTree(client)
+    await ct.fetch_commands(guild=client.guilds[0])
+    # Step 1 - Slash commands.
+    ct.add_command(commands.test, guild=client.guilds[0])
+    ct.add_command(commands.sql, guild=client.guilds[0])
+    ct.add_command(commands.welcome, guild=client.guilds[0])
+    ct.add_command(commands.modal, guild=client.guilds[0])
+
+    # Step 2 - Context actions.
+    ct.add_command(commands.ca_identify, guild=client.guilds[0])
+    await ct.sync(guild=client.guilds[0])
 
 
 @client.event
@@ -41,68 +55,6 @@ async def on_message(message):
         pieces = message.content.split(" ", 1)
         data = directory.get_user(pieces[1])
         await message.channel.send(data)
-
-
-@client.event
-async def on_interaction(interaction):
-    # Oh god oh fuck.
-    print("Heard an interaction!")
-    match interaction.type:
-        case discord.InteractionType.modal_submit:
-            # A modal was submitted.
-            print("Modal submission!")
-        case discord.InteractionType.application_command:
-            print("Application command!")
-            """
-            Within interaction.data is a type value of an integer. These values are:
-            1 - Slash Command.
-            2 - Context Action on User
-            3 - Context Action on Message
-            """
-            match interaction.data["type"]:
-                case 1:
-                    print("Slash command!")
-                    match interaction.data["name"]:
-                        case "welcome":
-                            await interaction.response.send_message(
-                                embeds=[welcome.get_welcome_embed(interaction.user, "Test introduction!")]
-                            )
-                        case "sql":
-                            query = interaction.data["options"][0]["value"]
-                            await interaction.response.send_message(database.raw_query(query))
-                case 2:
-                    print("Context action - user!")
-                    match interaction.data["name"].lower():
-                        case "identify":
-                            user_id = interaction.data["target_id"]
-                            user_data = database.identify_user(user_id)
-                            """
-                                user_data now contains a 5-tuple with the following values:
-                                - User ID
-                                - User full name
-                                - User grad year
-                                - User email stub
-                                - Username#Discriminator
-                            """
-                            data_embed = discord.Embed()
-                            data_embed.set_author(name="User Information")
-                            data_embed.title = user_data[4]
-                            data_embed.add_field(name="Name", value=user_data[1])
-                            data_embed.add_field(name="Graduation Year", value=user_data[2])
-                            data_embed.add_field(name="Email", value=user_data[3]+"@g.holycross.edu")
-
-                            data_embed.colour = 16777215
-
-                            datastring = f"Name: {user_data[1]}\n" \
-                                         f"Graduation Year: {user_data[2]}\n" \
-                                         f"Email: {user_data[3]}@g.holycross.edu"
-                            await interaction.response.send_message(
-                                ephemeral=True,
-                                content=datastring,
-                                embeds=[data_embed]
-                            )
-                case 3:
-                    print("Context action - message!")
 
 
 if __name__ == "__main__":
