@@ -49,7 +49,7 @@ def identify_user(user_id):
     print(query)
     data = raw_query(query)
     if len(data) == 0 or data is None:
-        return []
+        return None
     data = data[0]
     print(data)
     """

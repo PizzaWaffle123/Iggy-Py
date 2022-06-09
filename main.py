@@ -7,10 +7,10 @@ import os
 import commands
 import database
 import directory
-import welcome
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 client = discord.Client(intents=intents)
 ct = None
@@ -27,10 +27,11 @@ async def on_ready():
     ct = discord.app_commands.CommandTree(client)
     await ct.fetch_commands(guild=client.guilds[0])
     # Step 1 - Slash commands.
-    ct.add_command(commands.test, guild=client.guilds[0])
-    ct.add_command(commands.sql, guild=client.guilds[0])
-    ct.add_command(commands.welcome, guild=client.guilds[0])
-    ct.add_command(commands.modal, guild=client.guilds[0])
+    ct.add_command(commands.co_test, guild=client.guilds[0])
+    ct.add_command(commands.co_sql, guild=client.guilds[0])
+    ct.add_command(commands.co_welcome, guild=client.guilds[0])
+    ct.add_command(commands.co_modal, guild=client.guilds[0])
+    ct.add_command(commands.co_dbupdate, guild=client.guilds[0])
 
     # Step 2 - User context actions.
     ct.add_command(commands.ca_user_identify, guild=client.guilds[0])

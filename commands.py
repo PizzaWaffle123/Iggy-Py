@@ -4,7 +4,7 @@ import welcome as welc
 
 
 @discord.app_commands.command(name="test", description="Tests things.")
-async def test(interaction: discord.Interaction):
+async def co_test(interaction: discord.Interaction):
     await interaction.response.send_message(
         content="Test!"
     )
@@ -12,22 +12,48 @@ async def test(interaction: discord.Interaction):
 
 @discord.app_commands.command(name="sql", description="Submits a raw SQL query and returns the results.")
 @discord.app_commands.describe(query="Your raw SQL query.")
-async def sql(interaction: discord.Interaction, query: str):
+async def co_sql(interaction: discord.Interaction, query: str):
     print("Processing query...")
     await interaction.response.send_message(database.raw_query(query))
 
 
 @discord.app_commands.command(name="welcome", description="Generates a welcome embed.")
-async def welcome(interaction: discord.Interaction):
+async def co_welcome(interaction: discord.Interaction):
     await interaction.response.send_message(
         embeds=[welc.get_welcome_embed(interaction.user, "Test introduction!")]
     )
 
 
 @discord.app_commands.command(name="modal", description="Supplies a modal to the user.")
-async def modal(interaction: discord.Interaction):
+async def co_modal(interaction: discord.Interaction):
     await interaction.response.send_message(
         content="Not ready yet!"
+    )
+
+
+@discord.app_commands.command(name="dbupdate", description="DB update!")
+async def co_dbupdate(interaction: discord.Interaction):
+    print("DB update!")
+    # member_iter = interaction.guild.fetch_members()
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    discord_members = interaction.guild.members
+    print(len(discord_members))
+    rows = 0
+    async for user in interaction.guild.fetch_members():
+        userdata = database.identify_user(user.id)
+        if user.bot:
+            continue
+        if userdata is None:
+            # The user is not in the database.
+            query = f"INSERT INTO users (user_id, username) VALUES ({user.id}, \"{user.name}#{user.discriminator}\")"
+
+        else:
+            query = f"UPDATE users SET user_id = {user.id}, username = \"{user.name}#{user.discriminator}\" " \
+                    f"WHERE user_id = {user.id}"
+        database.raw_query(query)
+        rows += 1
+    await interaction.followup.send(
+        content=f"Done - {rows} rows affected."
     )
 
 
