@@ -43,10 +43,22 @@ def random_entry(table_name):
     return data
 
 
-def esports_roster(game=None):
-    if game : data = raw_query(f"SELECT esports.game, esports.position, students.name, students.username FROM esports NATURAL JOIN students WHERE esports.game LIKE '{game}'")
-    else : data = raw_query(f"SELECT esports.game, esports.position, students.name, students.username FROM esports NATURAL JOIN students")
-    data = data[0][1]
+def identify_user(user_id):
+    query = f"SELECT * FROM users WHERE user_id = \"{user_id}\""
+    print(query)
+    data = raw_query(query)
+    if len(data) == 0 or data is None:
+        return None
+    data = data[0]
+    print(data)
+    """
+        Data now contains a 5-tuple with the following values:
+        - User ID
+        - User full name
+        - User grad year
+        - User email stub
+        - Username#Discriminator
+        """
     return data
 
 
