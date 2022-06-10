@@ -2,14 +2,17 @@ import discord
 import database
 import iggy_ui
 import sound
+import verify
 from iggy_ui import MenuVerify
 import welcome as welc
 
 
 @discord.app_commands.command(name="test", description="Tests things.")
 async def co_test(interaction: discord.Interaction):
+    mv = iggy_ui.MenuVerify()
     await interaction.response.send_message(
-        content="Test!"
+        content="Filler content.",
+        view=mv
     )
 
 
@@ -29,8 +32,8 @@ async def co_welcome(interaction: discord.Interaction):
 
 @discord.app_commands.command(name="modal", description="Supplies a modal to the user.")
 async def co_modal(interaction: discord.Interaction):
-    await interaction.response.send_message(
-        content="Not ready yet!"
+    await interaction.response.send_modal(
+        verify.StudentEmailModal()
     )
 
 
@@ -89,15 +92,6 @@ async def co_sound(interaction: discord.Interaction, soundstr: str):
     await interaction.response.send_message(
         ephemeral=True,
         content="Sure man, no problem."
-    )
-
-
-@discord.app_commands.command(name="testdropdown", description="Summons a test dropdown.")
-async def co_testdropdown(interaction: discord.Interaction):
-    mv = iggy_ui.MenuVerify()
-    await interaction.response.send_message(
-        content="Filler content.",
-        view=mv
     )
 
 

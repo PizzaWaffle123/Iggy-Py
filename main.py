@@ -8,8 +8,6 @@ import commands
 import database
 import directory
 import sound
-from verify import student_email_modal
-import welcome
 
 test_mode = True
 
@@ -40,7 +38,6 @@ async def on_ready():
     ct.add_command(commands.co_dbupdate, guild=client.guilds[0])
     ct.add_command(commands.co_graduate, guild=client.guilds[0])
     ct.add_command(commands.co_sound, guild=client.guilds[0])
-    ct.add_command(commands.co_testdropdown, guild=client.guilds[0])
 
     # Step 2 - User context actions.
     ct.add_command(commands.ca_user_identify, guild=client.guilds[0])

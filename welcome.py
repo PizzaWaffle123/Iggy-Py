@@ -34,6 +34,7 @@ def get_welcome_embed(member, intro=None):
 
     # footer = "**Profile: {}**".format(member.mention)
     # embed.set_footer(text=footer)
+    print(intro)
 
     if intro is not None:
         embed.add_field(name="Introduction", value=intro, inline=True)
