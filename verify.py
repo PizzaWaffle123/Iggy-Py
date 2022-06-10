@@ -86,7 +86,7 @@ class student_code_modal(ui.Modal, title="Student Verification: Security Code"):
             # remove Pending
             # add Crusader
             # add Class Year (post parse)
-            await interaction.response.send_modal(student_intro_modal())
+            await interaction.response.send_message("Your security code is: 696420")
 
 
 class student_intro_modal(ui.Modal, title="Student Verification: Introduction"):
