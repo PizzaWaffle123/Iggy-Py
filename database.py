@@ -28,7 +28,6 @@ def raw_query(query):
     database.commit()
     db_cursor.close()
     database.close()
-
     return data
 
 

@@ -8,6 +8,10 @@ import commands
 import database
 import directory
 import sound
+from verify import student_email_modal
+import welcome
+
+test_mode = True
 
 intents = discord.Intents.default()
 intents.message_content = True
