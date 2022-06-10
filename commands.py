@@ -1,5 +1,8 @@
 import discord
 import database
+import iggy_ui
+import sound
+from iggy_ui import MenuVerify
 import welcome as welc
 
 
@@ -77,6 +80,24 @@ async def co_graduate(interaction: discord.Interaction):
     await interaction.response.send_message(
         ephemeral=True,
         content=f"Eligible Users: {len(db_users)}"
+    )
+
+
+@discord.app_commands.command(name="sound", description="Attempts to play a sound effect from the files.")
+async def co_sound(interaction: discord.Interaction, soundstr: str):
+    await sound.play(soundstr)
+    await interaction.response.send_message(
+        ephemeral=True,
+        content="Sure man, no problem."
+    )
+
+
+@discord.app_commands.command(name="testdropdown", description="Summons a test dropdown.")
+async def co_testdropdown(interaction: discord.Interaction):
+    mv = iggy_ui.MenuVerify()
+    await interaction.response.send_message(
+        content="Filler content.",
+        view=mv
     )
 
 
