@@ -7,6 +7,7 @@ import os
 import commands
 import database
 import directory
+import sound
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -22,6 +23,7 @@ async def on_ready():
     new_activity = discord.Game(name="around in Python...")
     print(f"Logged in as {client.user}")
     await client.change_presence(activity=new_activity)
+    sound.client = client
 
     # Synchronizes commands and binds them to local handlers.
     ct = discord.app_commands.CommandTree(client)
@@ -33,6 +35,7 @@ async def on_ready():
     ct.add_command(commands.co_modal, guild=client.guilds[0])
     ct.add_command(commands.co_dbupdate, guild=client.guilds[0])
     ct.add_command(commands.co_graduate, guild=client.guilds[0])
+    ct.add_command(commands.co_sound, guild=client.guilds[0])
 
     # Step 2 - User context actions.
     ct.add_command(commands.ca_user_identify, guild=client.guilds[0])
@@ -70,6 +73,8 @@ async def on_message(message):
         pieces = message.content.split(" ", 1)
         data = directory.get_user(pieces[1])
         await message.channel.send(data)
+    elif message.content.startswith("$thud"):
+        await sound.thud(client)
 
 
 if __name__ == "__main__":

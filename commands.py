@@ -1,5 +1,6 @@
 import discord
 import database
+import sound
 import welcome as welc
 
 
@@ -77,6 +78,15 @@ async def co_graduate(interaction: discord.Interaction):
     await interaction.response.send_message(
         ephemeral=True,
         content=f"Eligible Users: {len(db_users)}"
+    )
+
+
+@discord.app_commands.command(name="sound", description="Attempts to play a sound effect from the files.")
+async def co_sound(interaction: discord.Interaction, soundstr: str):
+    await sound.play(soundstr)
+    await interaction.response.send_message(
+        ephemeral=True,
+        content="Sure man, no problem."
     )
 
 
