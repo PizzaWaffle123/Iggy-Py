@@ -111,7 +111,7 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
     )
 
 
-@discord.app_commands.context_menu(name="Esports Management")
+@discord.app_commands.context_menu(name="Manage Esports")
 async def ca_user_esports(interaction: discord.Interaction, user: discord.Member):
     await interaction.response.send_message(
         ephemeral=True,
