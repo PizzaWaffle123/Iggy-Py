@@ -1,9 +1,7 @@
 import discord
 import database
 import iggy_ui
-import sound
 import verify
-from iggy_ui import MenuVerify
 import welcome as welc
 
 
@@ -83,15 +81,6 @@ async def co_graduate(interaction: discord.Interaction):
     await interaction.response.send_message(
         ephemeral=True,
         content=f"Eligible Users: {len(db_users)}"
-    )
-
-
-@discord.app_commands.command(name="sound", description="Attempts to play a sound effect from the files.")
-async def co_sound(interaction: discord.Interaction, soundstr: str):
-    await sound.play(soundstr)
-    await interaction.response.send_message(
-        ephemeral=True,
-        content="Sure man, no problem."
     )
 
 
