@@ -24,7 +24,6 @@ async def on_ready():
     new_activity = discord.Game(name="around in Python...")
     print(f"Logged in as {client.user}")
     await client.change_presence(activity=new_activity)
-    sound.client = client
 
     # Synchronizes commands and binds them to local handlers.
     ct = discord.app_commands.CommandTree(client)
