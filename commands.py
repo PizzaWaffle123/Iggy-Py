@@ -57,6 +57,29 @@ async def co_dbupdate(interaction: discord.Interaction):
     )
 
 
+@discord.app_commands.command(name="graduate", description="Converts all eligible Students into Alumni.")
+async def co_graduate(interaction: discord.Interaction):
+    from datetime import datetime
+    current_year = datetime.now().year
+    query = f"SELECT user_id FROM users WHERE grad_year <= {current_year}"
+    db_users = database.raw_query(query)
+    print(db_users)
+    for user in db_users:
+        """
+        This loop should:
+        - Get the user by their ID.
+        - If they don't have the Alumni role, apply it.
+        - Reply to the command runner with the number of users affected.
+        """
+        graduate_id = user[0]
+        print(graduate_id)
+
+    await interaction.response.send_message(
+        ephemeral=True,
+        content=f"Eligible Users: {len(db_users)}"
+    )
+
+
 @discord.app_commands.context_menu(name="Identify")
 async def ca_user_identify(interaction: discord.Interaction, user: discord.Member):
     user_data = database.identify_user(user.id)
@@ -85,6 +108,14 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
     await interaction.response.send_message(
         ephemeral=True,
         embeds=[data_embed]
+    )
+
+
+@discord.app_commands.context_menu(name="Esports Management")
+async def ca_user_esports(interaction: discord.Interaction, user: discord.Member):
+    await interaction.response.send_message(
+        ephemeral=True,
+        content=f"Not implemented yet! Used interaction on {user.name}#{user.discriminator}"
     )
 
 
