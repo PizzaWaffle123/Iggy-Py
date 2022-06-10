@@ -7,7 +7,6 @@ import os
 import commands
 import database
 import directory
-import sound
 
 test_mode = True
 
