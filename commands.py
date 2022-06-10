@@ -1,6 +1,8 @@
 import discord
 import database
+import iggy_ui
 import sound
+from iggy_ui import MenuVerify
 import welcome as welc
 
 
@@ -87,6 +89,15 @@ async def co_sound(interaction: discord.Interaction, soundstr: str):
     await interaction.response.send_message(
         ephemeral=True,
         content="Sure man, no problem."
+    )
+
+
+@discord.app_commands.command(name="testdropdown", description="Summons a test dropdown.")
+async def co_testdropdown(interaction: discord.Interaction):
+    mv = iggy_ui.MenuVerify()
+    await interaction.response.send_message(
+        content="Filler content.",
+        view=mv
     )
 
 
