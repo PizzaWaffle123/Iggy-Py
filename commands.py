@@ -1,15 +1,15 @@
 import discord
 import database
+import embeds
 import iggy_ui
 import verify
-import welcome as welc
 
 
 @discord.app_commands.command(name="test", description="Tests things.")
 async def co_test(interaction: discord.Interaction):
     mv = iggy_ui.MenuVerify()
     await interaction.response.send_message(
-        content="Filler content.",
+        embeds=[embeds.verify_intro()],
         view=mv
     )
 
@@ -24,7 +24,7 @@ async def co_sql(interaction: discord.Interaction, query: str):
 @discord.app_commands.command(name="welcome", description="Generates a welcome embed.")
 async def co_welcome(interaction: discord.Interaction):
     await interaction.response.send_message(
-        embeds=[welc.get_welcome_embed(interaction.user, "Test introduction!")]
+        embeds=[embeds.welcome_embed(interaction.user, "Test introduction!")]
     )
 
 
