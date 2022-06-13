@@ -5,8 +5,8 @@ from discord import Interaction, TextStyle, ui
 import smtplib
 import ssl
 
+import embeds
 import iggy_ui
-from welcome import get_welcome_embed
 
 from dotenv import load_dotenv
 
@@ -112,5 +112,5 @@ class StudentIntroModal(ui.Modal, title="Student Verification: Introduction"):
         intro = interaction.data['components'][0]['components'][0]['value']
         if intro == "":
             intro = None
-        embed = get_welcome_embed(interaction.user, intro)
+        embed = embeds.welcome_embed(interaction.user, intro)
         await interaction.response.send_message(embeds=[embed])
