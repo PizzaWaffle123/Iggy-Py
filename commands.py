@@ -3,6 +3,7 @@ import database
 import embeds
 import iggy_ui
 import verify
+import modals
 
 
 @discord.app_commands.command(name="test", description="Tests things.")
@@ -120,6 +121,14 @@ async def ca_user_esports(interaction: discord.Interaction, user: discord.Member
     await interaction.response.send_message(
         ephemeral=True,
         content=f"Not implemented yet! Used interaction on {user.name}#{user.discriminator}"
+    )
+
+
+@discord.app_commands.context_menu(name="Manage Database Information")
+async def ca_user_database(interaction: discord.Interaction, user: discord.Member):
+    data = database.identify_user(user.id)
+    await interaction.response.send_modal(
+        modals.DatabaseEditModal(data)
     )
 
 
