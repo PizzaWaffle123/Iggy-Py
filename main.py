@@ -39,6 +39,7 @@ async def on_ready():
     # Step 2 - User context actions.
     ct.add_command(commands.ca_user_identify, guild=client.guilds[0])
     ct.add_command(commands.ca_user_esports, guild=client.guilds[0])
+    ct.add_command(commands.ca_user_database, guild=client.guilds[0])
 
     # Step 3 - Message context actions.
     ct.add_command(commands.ca_message_thumbs, guild=client.guilds[0])
