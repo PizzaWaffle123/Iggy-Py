@@ -105,7 +105,7 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
     else:
         data_embed.add_field(name="Name", value=user_data[1])
         data_embed.add_field(name="Class", value=user_data[2])
-        data_embed.add_field(name="Email", value=user_data[3] + "@g.holycross.edu", inline=False)
+        data_embed.add_field(name="Email", value=user_data[3], inline=False)
 
     data_embed.set_thumbnail(url=user.avatar.url)
     data_embed.colour = 16777215
@@ -128,7 +128,7 @@ async def ca_user_esports(interaction: discord.Interaction, user: discord.Member
 async def ca_user_database(interaction: discord.Interaction, user: discord.Member):
     data = database.identify_user(user.id)
     await interaction.response.send_modal(
-        modals.DatabaseEditModal(data)
+        modals.DatabaseEditModal(data, user)
     )
 
 
