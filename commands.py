@@ -124,7 +124,7 @@ async def ca_user_esports(interaction: discord.Interaction, user: discord.Member
     )
 
 
-@discord.app_commands.context_menu(name="Manage Database Information")
+@discord.app_commands.context_menu(name="Manage User Info")
 async def ca_user_database(interaction: discord.Interaction, user: discord.Member):
     data = database.identify_user(user.id)
     await interaction.response.send_modal(
