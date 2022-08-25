@@ -8,7 +8,7 @@ class DatabaseEditModal(ui.Modal):
     target = None
     name = ui.TextInput(
         custom_id="name",
-        label="User's Full Name",
+        label="Full Name",
         style=TextStyle.short,
         required=True,
         max_length=24
@@ -16,7 +16,7 @@ class DatabaseEditModal(ui.Modal):
 
     grad_year = ui.TextInput(
         custom_id="grad_year",
-        label="User's Grad Year",
+        label="Grad Year",
         style=TextStyle.short,
         required=True,
         max_length=4
@@ -24,7 +24,7 @@ class DatabaseEditModal(ui.Modal):
 
     email_address = ui.TextInput(
         custom_id="email",
-        label="User's Holy Cross Email",
+        label="Holy Cross Email Address",
         style=TextStyle.short,
         required=True,
         max_length=24

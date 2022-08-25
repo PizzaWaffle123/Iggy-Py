@@ -10,6 +10,7 @@ import modals
 async def co_test(interaction: discord.Interaction):
     mv = iggy_ui.MenuVerify()
     await interaction.response.send_message(
+        ephemeral=True,
         embeds=[embeds.verify_intro()],
         view=mv
     )
@@ -97,8 +98,9 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
         - Username#Discriminator
     """
     data_embed = discord.Embed()
-    data_embed.set_author(name="User Information")
+    data_embed.set_author(name="Identify User")
     data_embed.title = f"{user.name}#{user.discriminator}"
+    data_embed.footer.text = "HELLO"
 
     if user_data is None or len(user_data) == 0:
         data_embed.description = "No information available on this user!\n Please let the E-Board know!"
@@ -118,9 +120,16 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
 
 @discord.app_commands.context_menu(name="Manage Esports")
 async def ca_user_esports(interaction: discord.Interaction, user: discord.Member):
+    all_teams = database.get_teams()
+    user_teams = database.get_teams(user.id)
+    if not user_teams or len(user_teams) != len(all_teams) : user_teams.append(('Add to New Team', 'new', '🆕',))
+    v = discord.ui.View()
+    v.add_item(iggy_ui.ManageTeamsDropdown(items=user_teams, user_id=user.id))
+
     await interaction.response.send_message(
         ephemeral=True,
-        content=f"Not implemented yet! Used interaction on {user.name}#{user.discriminator}"
+        content=f"Managing esports for <@{user.id}>.",
+        view=v
     )
 
 
