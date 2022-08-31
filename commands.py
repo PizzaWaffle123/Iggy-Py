@@ -51,10 +51,10 @@ async def co_dbupdate(interaction: discord.Interaction):
             continue
         if userdata is None:
             # The user is not in the database.
-            query = f"INSERT INTO users (user_id, username) VALUES ({user.id}, \"{user.name}#{user.discriminator}\")"
+            query = f"INSERT INTO users (user_id, username) VALUES ({user.id}, '{user.name}#{user.discriminator}')"
 
         else:
-            query = f"UPDATE users SET user_id = {user.id}, username = \"{user.name}#{user.discriminator}\" " \
+            query = f"UPDATE users SET user_id = {user.id}, username = '{user.name}#{user.discriminator}' " \
                     f"WHERE user_id = {user.id}"
         database.raw_query(query)
         rows += 1
@@ -122,14 +122,20 @@ async def ca_user_identify(interaction: discord.Interaction, user: discord.Membe
 async def ca_user_esports(interaction: discord.Interaction, user: discord.Member):
     all_teams = database.get_teams()
     user_teams = database.get_teams(user.id)
-    if not user_teams or len(user_teams) != len(all_teams) : user_teams.append(('Add to New Team', 'new', '🆕',))
-    v = discord.ui.View()
-    v.add_item(iggy_ui.ManageTeamsDropdown(items=user_teams, user_id=user.id))
+    if not user_teams or len(user_teams) != len(all_teams) : user_teams.append(('Add to New Team', 'new', '🆕', None))
+    view = discord.ui.View()
+    view.add_item(iggy_ui.ManageTeamsDropdown(items=user_teams, user_id=user.id))
+    # player_info = database.get_esports_player_info(user.id)
+    # on_teams = player_info[0]
+    # off_teams = player_info[1]
+    # if off_teams : on_teams.append([('Add to New Team', 'new', '🆕',)])
+    # view = discord.ui.View()
+    # view.add_item(iggy_ui.ManageTeamsDropdown(items=user_teams, user_id=user.id))
 
     await interaction.response.send_message(
         ephemeral=True,
         content=f"Managing esports for <@{user.id}>.",
-        view=v
+        view=view
     )
 
 

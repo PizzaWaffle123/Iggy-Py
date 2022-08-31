@@ -68,7 +68,7 @@ class DatabaseEditModal(ui.Modal):
         print(data_to_set)
         query = "UPDATE users SET "
         for k in data_to_set.keys():
-            stub = f"{k}=\"{data_to_set[k]}\", "
+            stub = f"{k}='{data_to_set[k]}', "
             query += stub
         query = query[:-2]
         query += f" WHERE user_id={self.target.id}"
